@@ -1,0 +1,21 @@
+{
+  "name": "imark-mailer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "White-label unified inbox platform",
+  "scripts": {
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:backend": "pnpm --filter backend start:dev",
+    "dev:imap-daemon": "pnpm --filter imap-daemon dev",
+    "build:frontend": "pnpm --filter frontend build",
+    "build:backend": "pnpm --filter backend build",
+    "build:imap-daemon": "pnpm --filter imap-daemon build",
+    "db:migrate": "pnpm --filter backend migration:run",
+    "db:generate": "pnpm --filter backend migration:generate",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

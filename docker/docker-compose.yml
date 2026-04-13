@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: imark-postgres
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME:-imark}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-imark_secret}
+      POSTGRES_DB: ${DATABASE_NAME:-imark_mailer}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-imark} -d ${DATABASE_NAME:-imark_mailer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: imark-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-imark}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-imark_secret}
+      DATABASE_NAME: ${DATABASE_NAME:-imark_mailer}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      MAILGUN_PRIVATE_API_KEY: ${MAILGUN_PRIVATE_API_KEY}
+      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN}
+      MAILGUN_BASE_URL: ${MAILGUN_BASE_URL:-https://api.mailgun.net}
+      MAILGUN_FROM_EMAIL: ${MAILGUN_FROM_EMAIL}
+      MAILGUN_FROM_NAME: ${MAILGUN_FROM_NAME:-Sales}
+      MAILGUN_WEBHOOK_SIGNING_KEY: ${MAILGUN_WEBHOOK_SIGNING_KEY}
+      BACKEND_PORT: 3001
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    container_name: imark-frontend
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+    ports:
+      - "3000:3000"
+
+  imap-daemon:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.imap-daemon
+    container_name: imark-imap-daemon
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-imark}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-imark_secret}
+      DATABASE_NAME: ${DATABASE_NAME:-imark_mailer}
+      IMAP_POLL_INTERVAL_MS: ${IMAP_POLL_INTERVAL_MS:-60000}
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
