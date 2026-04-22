@@ -1,36 +1,66 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
-# Next.js build output
-.next/
-
-# Build artifacts
+# Build outputs
 dist/
-build/
+.next/
 out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+nul
 
 # Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
 
-# Environment files (contain secrets)
-.env
-.env.*
-!.env.example
-
-# SSL certificates (sensitive)
-docker/nginx/ssl/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Coverage
+# Testing
 coverage/
+
+# Misc
+*.tsbuildinfo
+.turbo/
+
+# Backups
+backups/
+
+# SSL Certificates
+docker/nginx/ssl/
+docker/nginx/certbot/
+
+# Production env
+.env.production
+
+# === Secrets — never commit ===
+# SSH / deploy keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.pem
+*.ppk
+deploy-key
+deploy-key.*
+
+# === Build / deploy artifacts ===
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# Local Claude / agent config
+.claude/

@@ -29,9 +29,13 @@ const FOLDER_MAPPING: Record<string, ThreadFolder> = {
   'Archives': 'archive',
 };
 
-// Folders to sync (in order of priority)
-const FOLDERS_TO_SYNC = [
+// Priority folders - sync every poll (fast)
+const PRIORITY_FOLDERS = [
   'INBOX',
+];
+
+// Background folders - sync less frequently
+const BACKGROUND_FOLDERS = [
   '[Gmail]/Sent Mail',
   'Sent',
   'Sent Items',
@@ -54,7 +58,7 @@ export class ImapSyncService {
     this.messageRepository = dataSource.getRepository(Message);
   }
 
-  async syncAllMailboxes(): Promise<void> {
+  async syncAllMailboxes(priorityOnly: boolean = true): Promise<void> {
     const mailboxes = await this.mailboxRepository.find({
       where: { isActive: true },
     });
@@ -63,37 +67,81 @@ export class ImapSyncService {
 
     for (const mailbox of mailboxes) {
       try {
-        await this.syncMailbox(mailbox);
+        await this.syncMailbox(mailbox, priorityOnly);
       } catch (error) {
         console.error(`Failed to sync mailbox ${mailbox.email}:`, error);
       }
     }
   }
 
-  private async syncMailbox(mailbox: Mailbox): Promise<void> {
-    console.log(`Syncing mailbox: ${mailbox.email}`);
-
-    const client = new ImapFlow({
-      host: mailbox.imapHost,
-      port: mailbox.imapPort,
-      secure: mailbox.imapSsl,
-      auth: {
-        user: mailbox.imapUsername,
-        pass: mailbox.imapPassword,
-      },
-      logger: false,
+  async syncBackgroundFolders(): Promise<void> {
+    const mailboxes = await this.mailboxRepository.find({
+      where: { isActive: true },
     });
 
-    try {
-      await client.connect();
+    for (const mailbox of mailboxes) {
+      try {
+        await this.syncMailbox(mailbox, false, true);
+      } catch (error) {
+        console.error(`Failed to sync background folders for ${mailbox.email}:`, error);
+      }
+    }
+  }
+
+  private async syncMailbox(mailbox: Mailbox, priorityOnly: boolean = true, backgroundOnly: boolean = false): Promise<void> {
+    console.log(`Syncing mailbox: ${mailbox.email}${backgroundOnly ? ' (background)' : ''}`);
+
+    // Retry logic with exponential backoff
+    const maxRetries = 3;
+    let lastError: Error | null = null;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const client = new ImapFlow({
+        host: mailbox.imapHost,
+        port: mailbox.imapPort,
+        secure: mailbox.imapSsl,
+        auth: {
+          user: mailbox.imapUsername,
+          pass: mailbox.imapPassword,
+        },
+        logger: {
+          debug: (msg: any) => {},
+          info: (msg: any) => console.log('[IMAP]', typeof msg === 'object' ? JSON.stringify(msg) : msg),
+          warn: (msg: any) => console.warn('[IMAP WARN]', typeof msg === 'object' ? JSON.stringify(msg) : msg),
+          error: (msg: any) => console.error('[IMAP ERROR]', typeof msg === 'object' ? JSON.stringify(msg) : msg),
+        },
+        greetingTimeout: 30000,
+        socketTimeout: 60000,
+        tls: {
+          rejectUnauthorized: true,
+          minVersion: 'TLSv1.2',
+        },
+      });
+
+      // Handle connection errors gracefully - don't let unhandled events crash the daemon
+      client.on('error', (err: Error) => {
+        // Only log if not a known transient error during retry
+        if (attempt === maxRetries) {
+          console.error(`ImapFlow error event for ${mailbox.email}:`, err.message);
+        }
+      });
+
+      try {
+        await client.connect();
 
       // List available folders
       const folders = await client.list();
       const availableFolders = folders.map(f => f.path);
-      console.log(`Available folders for ${mailbox.email}:`, availableFolders.slice(0, 10));
+
+      if (!backgroundOnly) {
+        console.log(`Available folders for ${mailbox.email}:`, availableFolders.slice(0, 10));
+      }
+
+      // Determine which folders to sync
+      const foldersToSync = backgroundOnly ? BACKGROUND_FOLDERS : (priorityOnly ? PRIORITY_FOLDERS : [...PRIORITY_FOLDERS, ...BACKGROUND_FOLDERS]);
 
       // Sync each folder that exists
-      for (const folderName of FOLDERS_TO_SYNC) {
+      for (const folderName of foldersToSync) {
         if (availableFolders.includes(folderName)) {
           const targetFolder = FOLDER_MAPPING[folderName] || 'inbox';
           try {
@@ -109,11 +157,29 @@ export class ImapSyncService {
         lastSyncAt: new Date(),
       });
 
-      await client.logout();
-    } catch (error) {
-      console.error(`IMAP connection error for ${mailbox.email}:`, error);
-      throw error;
+        await client.logout();
+        // Success - exit retry loop
+        return;
+      } catch (error: any) {
+        lastError = error;
+        // Try to close the connection gracefully
+        try {
+          await client.logout();
+        } catch {
+          // Ignore logout errors during cleanup
+        }
+
+        // Check if we should retry
+        if (attempt < maxRetries) {
+          const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // 1s, 2s, 4s... max 10s
+          console.log(`IMAP connection attempt ${attempt} failed for ${mailbox.email}, retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        }
+      }
     }
+
+    // All retries failed
+    console.error(`IMAP connection failed for ${mailbox.email} after ${maxRetries} attempts:`, lastError?.message || lastError);
   }
 
   private async syncFolder(
@@ -130,25 +196,59 @@ export class ImapSyncService {
       // For sent folder, we need direction = outbound
       const direction = targetFolder === 'sent' ? 'outbound' : 'inbound';
 
-      // Fetch recent messages (last 30 days or newer)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
       let messageCount = 0;
+      const lastUid = mailbox.lastUid || 0;
 
-      for await (const msg of client.fetch('1:*', {
-        uid: true,
-        envelope: true,
-        source: true,
-      })) {
+      // Always search by recent date for realtime sync
+      const thirtyMinsAgo = new Date();
+      thirtyMinsAgo.setMinutes(thirtyMinsAgo.getMinutes() - 30);
+      const searchCriteria = { since: thirtyMinsAgo };
+
+      // Search for messages matching criteria
+      const searchResult = await client.search(searchCriteria, { uid: true });
+      const uids = searchResult === false ? [] : searchResult;
+
+      if (uids.length === 0) {
+        console.log(`No new messages in ${imapFolder}`);
+        return;
+      }
+
+      console.log(`Found ${uids.length} message(s) to sync in ${imapFolder}`);
+
+      // Fetch in batches of 50 to avoid Gmail limits
+      const batchSize = 50;
+      let maxUid = lastUid;
+
+      for (let i = 0; i < uids.length; i += batchSize) {
+        const batchUids = uids.slice(i, i + batchSize);
+        const uidRange = batchUids.join(',');
+
         try {
-          const wasNew = await this.processMessage(mailbox.id, msg, targetFolder, direction);
-          if (wasNew) {
-            messageCount++;
+          for await (const msg of client.fetch(uidRange, {
+            uid: true,
+            envelope: true,
+            source: true,
+          }, { uid: true })) {
+            try {
+              const wasNew = await this.processMessage(mailbox.id, msg, targetFolder, direction);
+              if (wasNew) {
+                messageCount++;
+              }
+              if (msg.uid > maxUid) {
+                maxUid = msg.uid;
+              }
+            } catch (error) {
+              console.error(`Failed to process message UID ${msg.uid} in ${imapFolder}:`, error);
+            }
           }
-        } catch (error) {
-          console.error(`Failed to process message UID ${msg.uid} in ${imapFolder}:`, error);
+        } catch (batchError) {
+          console.error(`Failed to fetch batch in ${imapFolder}:`, batchError);
         }
+      }
+
+      // Update lastUid in mailbox
+      if (maxUid > lastUid) {
+        await this.mailboxRepository.update(mailbox.id, { lastUid: maxUid });
       }
 
       console.log(`Synced ${messageCount} new message(s) from ${imapFolder}`);
@@ -220,12 +320,13 @@ export class ImapSyncService {
 
     await this.messageRepository.save(message);
 
-    // Update thread
+    // Update thread - use GREATEST to only update timestamp if new message is newer
+    // This ensures new emails always appear on top (Gmail standard behavior)
     await this.threadRepository
       .createQueryBuilder()
       .update(Thread)
       .set({
-        lastMessageAt: receivedAt,
+        lastMessageAt: () => `GREATEST(last_message_at, '${receivedAt.toISOString()}'::timestamp)`,
         messageCount: () => 'message_count + 1',
         isRead: folder !== 'inbox', // Mark as read if not inbox
       })

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import type { ISmtpProvider, SmtpProviderType } from '@imark/shared';
+import type { ISmtpProvider, SmtpProviderType } from '@rio/shared';
 
 const PROVIDER_TYPES: { value: SmtpProviderType; label: string }[] = [
   { value: 'mailgun', label: 'Mailgun' },

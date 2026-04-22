@@ -14,7 +14,7 @@ export class Draft {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'mailbox_id' })
+  @Column({ name: 'mailbox_id', type: 'uuid' })
   mailboxId: string;
 
   @ManyToOne(() => Mailbox, { onDelete: 'CASCADE' })

@@ -15,7 +15,7 @@
     "migration:revert": "typeorm migration:revert -d ./src/config/typeorm.config.ts"
   },
   "dependencies": {
-    "@imark/shared": "workspace:*",
+    "@rio/shared": "workspace:*",
     "@nestjs/common": "^10.3.0",
     "dotenv": "^16.3.1",
     "@nestjs/config": "^3.1.1",

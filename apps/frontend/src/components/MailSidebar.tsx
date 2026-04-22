@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import type { IFolderCounts, ThreadFolder, ILabel } from '@imark/shared';
+import type { IFolderCounts, ThreadFolder, ILabel } from '@rio/shared';
 import { api } from '../lib/api';
 
 interface MailSidebarProps {

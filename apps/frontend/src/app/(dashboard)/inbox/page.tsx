@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { ThreadList } from '@/components/ThreadList';
 import { MailSidebar } from '@/components/MailSidebar';
 import { SearchBar } from '@/components/SearchBar';
-import type { IThread, IMailbox, IPaginatedResponse, ThreadFolder, IFolderCounts, ILabel } from '@imark/shared';
+import type { IThread, IMailbox, IPaginatedResponse, ThreadFolder, IFolderCounts, ILabel } from '@rio/shared';
 
 export default function InboxPage() {
   const [threads, setThreads] = useState<IThread[]>([]);
@@ -34,6 +34,17 @@ export default function InboxPage() {
     loadFolderCounts();
   }, [page, selectedMailbox, currentFolder, searchQuery, selectedLabelId]);
 
+  // Auto-refresh every 5 seconds for realtime emails (silent refresh - no loading spinner)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!selectedLabelId) {
+        loadThreads(false); // Silent refresh - no loading spinner
+      }
+      loadFolderCounts();
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [selectedMailbox, currentFolder, searchQuery, selectedLabelId]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -49,7 +60,7 @@ export default function InboxPage() {
           break;
         case 'r':
           // Refresh
-          loadThreads();
+          loadThreads(true);
           break;
         case 'g':
           // Focus on navigation - next key determines folder
@@ -93,8 +104,12 @@ export default function InboxPage() {
     }
   };
 
-  const loadThreads = async () => {
-    setIsLoading(true);
+  const loadThreads = async (showLoading = true) => {
+    // Show loading spinner when explicitly requested (initial load, refresh button, folder change)
+    // Don't show spinner for background auto-refresh (showLoading = false)
+    if (showLoading) {
+      setIsLoading(true);
+    }
     try {
       const folder = currentFolder === 'all' ? undefined : currentFolder;
       const data: IPaginatedResponse<IThread> = await api.getThreads(
@@ -109,13 +124,17 @@ export default function InboxPage() {
     } catch (err) {
       console.error('Failed to load threads:', err);
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   };
 
-  const loadThreadsByLabel = async () => {
+  const loadThreadsByLabel = async (showLoading = true) => {
     if (!selectedLabelId) return;
-    setIsLoading(true);
+    if (showLoading) {
+      setIsLoading(true);
+    }
     try {
       const data = await api.getThreadsByLabel(selectedLabelId);
       setThreads(data);
@@ -123,7 +142,9 @@ export default function InboxPage() {
     } catch (err) {
       console.error('Failed to load threads by label:', err);
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -264,7 +285,7 @@ export default function InboxPage() {
                   </option>
                 ))}
               </select>
-              <button onClick={selectedLabelId ? loadThreadsByLabel : loadThreads} className="btn-secondary text-sm">
+              <button onClick={() => selectedLabelId ? loadThreadsByLabel() : loadThreads(true)} className="btn-secondary text-sm">
                 Refresh
               </button>
             </div>

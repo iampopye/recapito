@@ -18,21 +18,21 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'thread_id' })
+  @Column({ name: 'thread_id', type: 'uuid' })
   threadId: string;
 
   @ManyToOne(() => Thread, (thread) => thread.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'thread_id' })
   thread: Thread;
 
-  @Column({ name: 'mailbox_id' })
+  @Column({ name: 'mailbox_id', type: 'uuid' })
   mailboxId: string;
 
   @ManyToOne(() => Mailbox, (mailbox) => mailbox.messages, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'mailbox_id' })
   mailbox: Mailbox;
 
-  @Column({ name: 'message_id', unique: true })
+  @Column({ name: 'message_id', type: 'varchar', length: 500, unique: true })
   messageId: string; // Email Message-ID header
 
   @Column({ name: 'in_reply_to', type: 'varchar', nullable: true })
@@ -41,7 +41,7 @@ export class Message {
   @Column({ type: 'varchar', length: 20 })
   direction: MessageDirection;
 
-  @Column({ name: 'from_address' })
+  @Column({ name: 'from_address', type: 'varchar', length: 500 })
   fromAddress: string;
 
   @Column({ name: 'from_name', type: 'varchar', nullable: true })
@@ -53,7 +53,7 @@ export class Message {
   @Column('text', { name: 'cc_addresses', array: true, default: '{}' })
   ccAddresses: string[];
 
-  @Column()
+  @Column({ type: 'varchar', length: 500 })
   subject: string;
 
   @Column({ name: 'body_text', type: 'text', nullable: true })

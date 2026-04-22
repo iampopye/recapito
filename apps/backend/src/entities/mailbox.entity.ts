@@ -18,35 +18,35 @@ export class Mailbox {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.mailboxes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   email: string;
 
-  @Column({ name: 'imap_host' })
+  @Column({ name: 'imap_host', type: 'varchar', length: 255 })
   imapHost: string;
 
-  @Column({ name: 'imap_port' })
+  @Column({ name: 'imap_port', type: 'int' })
   imapPort: number;
 
   @Column({ name: 'imap_ssl', default: true })
   imapSsl: boolean;
 
-  @Column({ name: 'imap_username' })
+  @Column({ name: 'imap_username', type: 'varchar', length: 255 })
   imapUsername: string;
 
-  @Column({ name: 'imap_password' })
+  @Column({ name: 'imap_password', type: 'varchar', length: 500 })
   imapPassword: string;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
 
-  @Column({ name: 'smtp_provider_id', nullable: true })
+  @Column({ name: 'smtp_provider_id', type: 'uuid', nullable: true })
   smtpProviderId: string | null;
 
   @ManyToOne(() => SmtpProvider, { onDelete: 'SET NULL', nullable: true })

@@ -16,7 +16,7 @@ export class OutboundLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'message_id' })
+  @Column({ name: 'message_id', type: 'uuid' })
   messageId: string;
 
   @OneToOne(() => Message, (message) => message.outboundLog, { onDelete: 'CASCADE' })

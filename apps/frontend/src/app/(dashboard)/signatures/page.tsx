@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import type { ISignature } from '@imark/shared';
+import type { ISignature } from '@rio/shared';
 
 export default function SignaturesPage() {
   const [signatures, setSignatures] = useState<ISignature[]>([]);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
-import type { IMailbox } from '@imark/shared';
+import type { IMailbox } from '@rio/shared';
 
 interface ReplyBoxProps {
   threadId: string;

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { IThread, ThreadFolder, ILabel } from '@imark/shared';
+import type { IThread, ThreadFolder, ILabel } from '@rio/shared';
 
 interface ThreadListProps {
   threads: IThread[];

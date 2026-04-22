@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import type { IContact } from '@imark/shared';
+import type { IContact } from '@rio/shared';
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<IContact[]>([]);
