@@ -17,21 +17,21 @@ export class SmtpProvider {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id' })
+  @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
+  @Column({ type: 'varchar', length: 100 })
   name: string;
 
   @Column({ type: 'varchar', default: 'mailgun' })
   type: SmtpProviderType;
 
   // Email address to send from
-  @Column({ name: 'from_email' })
+  @Column({ name: 'from_email', type: 'varchar', length: 255 })
   fromEmail: string;
 
   @Column({ name: 'from_name', type: 'varchar', nullable: true })

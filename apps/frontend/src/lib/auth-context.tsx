@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from './api';
-import type { IUser } from '@imark/shared';
+import type { IUser } from '@rio/shared';
 
 interface AuthContextType {
   user: IUser | null;

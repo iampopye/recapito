@@ -4,7 +4,7 @@ import { Repository, In, ILike } from 'typeorm';
 import { Thread, ThreadFolder } from '../../entities/thread.entity';
 import { Mailbox } from '../../entities/mailbox.entity';
 import { Message } from '../../entities/message.entity';
-import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@imark/shared';
+import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@rio/shared';
 
 interface FindThreadsOptions {
   page?: number;

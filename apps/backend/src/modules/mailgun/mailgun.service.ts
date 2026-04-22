@@ -314,9 +314,9 @@ export class MailgunService {
     const formData = new URLSearchParams();
     formData.append('from', `${settings.fromName} <${settings.fromEmail}>`);
     formData.append('to', to);
-    formData.append('subject', 'Test Email from iMark Mailer');
-    formData.append('text', 'This is a test email sent from iMark Mailer to verify your Mailgun configuration.');
-    formData.append('html', '<h1>Test Email</h1><p>This is a test email sent from <strong>iMark Mailer</strong> to verify your Mailgun configuration.</p>');
+    formData.append('subject', 'Test Email from Rio Mailer');
+    formData.append('text', 'This is a test email sent from Rio Mailer to verify your Mailgun configuration.');
+    formData.append('html', '<h1>Test Email</h1><p>This is a test email sent from <strong>Rio Mailer</strong> to verify your Mailgun configuration.</p>');
 
     const url = `${settings.baseUrl}/v3/${settings.domain}/messages`;
     const auth = Buffer.from(`api:${settings.apiKey}`).toString('base64');

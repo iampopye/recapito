@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '../../../lib/api';
-import type { ITemplate } from '@imark/shared';
+import type { ITemplate } from '@rio/shared';
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<ITemplate[]>([]);

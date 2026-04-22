@@ -3,17 +3,17 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: imark-postgres
+    container_name: rio-postgres
     environment:
-      POSTGRES_USER: ${DATABASE_USERNAME:-imark}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-imark_secret}
-      POSTGRES_DB: ${DATABASE_NAME:-imark_mailer}
+      POSTGRES_USER: ${DATABASE_USERNAME:-rio}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-rio_secret}
+      POSTGRES_DB: ${DATABASE_NAME:-rio_mailer}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-imark} -d ${DATABASE_NAME:-imark_mailer}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-rio} -d ${DATABASE_NAME:-rio_mailer}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -22,16 +22,16 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.backend
-    container_name: imark-backend
+    container_name: rio-backend
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
-      DATABASE_USERNAME: ${DATABASE_USERNAME:-imark}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-imark_secret}
-      DATABASE_NAME: ${DATABASE_NAME:-imark_mailer}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-rio}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-rio_secret}
+      DATABASE_NAME: ${DATABASE_NAME:-rio_mailer}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
       MAILGUN_PRIVATE_API_KEY: ${MAILGUN_PRIVATE_API_KEY}
@@ -48,7 +48,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.frontend
-    container_name: imark-frontend
+    container_name: rio-frontend
     depends_on:
       - backend
     environment:
@@ -60,16 +60,16 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile.imap-daemon
-    container_name: imark-imap-daemon
+    container_name: rio-imap-daemon
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       DATABASE_HOST: postgres
       DATABASE_PORT: 5432
-      DATABASE_USERNAME: ${DATABASE_USERNAME:-imark}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-imark_secret}
-      DATABASE_NAME: ${DATABASE_NAME:-imark_mailer}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-rio}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-rio_secret}
+      DATABASE_NAME: ${DATABASE_NAME:-rio_mailer}
       IMAP_POLL_INTERVAL_MS: ${IMAP_POLL_INTERVAL_MS:-60000}
     restart: unless-stopped
 

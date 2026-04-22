@@ -25,14 +25,14 @@ export class Thread {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'mailbox_id' })
+  @Column({ name: 'mailbox_id', type: 'uuid' })
   mailboxId: string;
 
   @ManyToOne(() => Mailbox, (mailbox) => mailbox.threads, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'mailbox_id' })
   mailbox: Mailbox;
 
-  @Column()
+  @Column({ type: 'varchar', length: 500 })
   subject: string;
 
   @Column('text', { array: true, default: '{}' })

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: imark-postgres
+    container_name: rio-postgres
     restart: always
     environment:
       POSTGRES_USER: ${DATABASE_USERNAME}
@@ -17,14 +17,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - imark-network
+      - rio-network
 
   backend:
-    image: ${DOCKER_REGISTRY:-}imark-backend:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-}rio-backend:${VERSION:-latest}
     build:
       context: ..
       dockerfile: docker/Dockerfile.backend
-    container_name: imark-backend
+    container_name: rio-backend
     restart: always
     depends_on:
       postgres:
@@ -54,16 +54,16 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - imark-network
+      - rio-network
 
   frontend:
-    image: ${DOCKER_REGISTRY:-}imark-frontend:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-}rio-frontend:${VERSION:-latest}
     build:
       context: ..
       dockerfile: docker/Dockerfile.frontend
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-    container_name: imark-frontend
+    container_name: rio-frontend
     restart: always
     depends_on:
       - backend
@@ -77,14 +77,14 @@ services:
       timeout: 10s
       retries: 3
     networks:
-      - imark-network
+      - rio-network
 
   imap-daemon:
-    image: ${DOCKER_REGISTRY:-}imark-imap-daemon:${VERSION:-latest}
+    image: ${DOCKER_REGISTRY:-}rio-imap-daemon:${VERSION:-latest}
     build:
       context: ..
       dockerfile: docker/Dockerfile.imap-daemon
-    container_name: imark-imap-daemon
+    container_name: rio-imap-daemon
     restart: always
     depends_on:
       postgres:
@@ -98,11 +98,11 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       IMAP_POLL_INTERVAL_MS: ${IMAP_POLL_INTERVAL_MS:-60000}
     networks:
-      - imark-network
+      - rio-network
 
   nginx:
     image: nginx:alpine
-    container_name: imark-nginx
+    container_name: rio-nginx
     restart: always
     ports:
       - "80:80"
@@ -115,22 +115,22 @@ services:
       - frontend
       - backend
     networks:
-      - imark-network
+      - rio-network
 
   # Optional: Certbot for SSL certificates
   certbot:
     image: certbot/certbot
-    container_name: imark-certbot
+    container_name: rio-certbot
     volumes:
       - ./nginx/ssl:/etc/letsencrypt
       - ./nginx/certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
-      - imark-network
+      - rio-network
 
 volumes:
   postgres_data:
 
 networks:
-  imark-network:
+  rio-network:
     driver: bridge

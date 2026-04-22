@@ -5,19 +5,18 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copy workspace files
-COPY package.json pnpm-workspace.yaml ./
-COPY apps/imap-daemon/package.json ./apps/imap-daemon/
+# Copy package.json
+COPY apps/imap-daemon/package.json ./
 
-# Install dependencies
+# Install all dependencies
 RUN pnpm install
 
 # Copy source files
-COPY apps/imap-daemon ./apps/imap-daemon
+COPY apps/imap-daemon/src ./src
+COPY apps/imap-daemon/tsconfig.json ./
 
 # Build
-WORKDIR /app/apps/imap-daemon
-RUN pnpm build
+RUN npx tsc
 
 # Production stage
 FROM node:20-alpine AS runner
@@ -26,14 +25,11 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copy necessary files
-COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
-COPY --from=builder /app/apps/imap-daemon/package.json ./apps/imap-daemon/
-COPY --from=builder /app/apps/imap-daemon/dist ./apps/imap-daemon/dist
-
-# Install production dependencies only
+# Copy package.json and install prod dependencies
+COPY apps/imap-daemon/package.json ./
 RUN pnpm install --prod
 
-WORKDIR /app/apps/imap-daemon
+# Copy built files
+COPY --from=builder /app/dist ./dist
 
 CMD ["node", "dist/index.js"]
