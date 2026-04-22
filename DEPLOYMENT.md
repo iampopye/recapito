@@ -113,11 +113,11 @@ cd /opt/rio-mailer/docker
 docker compose -f docker-compose.prod.yml down
 ```
 
-## CI/CD with GitHub Actions
+## CI/CD
 
-### Required Secrets
+No GitHub Actions workflows are included in this repo by default. Deployments are manual via `./scripts/deploy.sh`. To add CI/CD, create workflows under `.github/workflows/` — you'll need a token with `workflow` scope to push them.
 
-Add these to your GitHub repository settings:
+Suggested required GitHub Secrets if you do wire up Actions:
 
 | Secret | Description |
 |--------|-------------|
@@ -126,13 +126,6 @@ Add these to your GitHub repository settings:
 | `DEPLOY_SSH_KEY` | Private SSH key |
 | `NEXT_PUBLIC_API_URL` | Production API URL |
 | `HEALTH_CHECK_URL` | URL for health check |
-
-### Deployment Flow
-
-1. Push code to `main` branch
-2. CI runs tests and builds
-3. Tag a release: `git tag v1.0.0 && git push --tags`
-4. Deploy workflow builds images and deploys
 
 ## Monitoring
 
