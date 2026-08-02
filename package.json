@@ -29,7 +29,7 @@
   "packageManager": "pnpm@9.15.9",
   "devDependencies": {
     "@eslint/js": "^9.39.5",
-    "@next/eslint-plugin-next": "^15.5.22",
+    "@next/eslint-plugin-next": "^16.2.12",
     "eslint": "^9",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
