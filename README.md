@@ -405,7 +405,9 @@ Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT
 
 ## License
 
-Recapito is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. The full text is in [LICENSE](LICENSE).
+Recapito is licensed under the **GNU Affero General Public License, version 3 or (at your option) any later version** — SPDX identifier `AGPL-3.0-or-later`. The full text is in [LICENSE](LICENSE).
+
+The "or later" matters: declaring a bare `AGPL-3.0` leaves it ambiguous whether future licence versions may be used, and that ambiguity is effectively permanent once outside contributions arrive. Contributions are accepted on the same terms.
 
 In plain English:
 

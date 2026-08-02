@@ -291,6 +291,16 @@ This includes anything that exposes stored mailbox credentials, allows one user 
 
 ## Licensing of contributions
 
-Recapito is licensed under the [GNU Affero General Public License v3.0](LICENSE). By contributing, you agree that your contributions are licensed under the same terms.
+Recapito is licensed under the [GNU Affero General Public License, version 3 or later](LICENSE) (`AGPL-3.0-or-later`). By contributing, you agree that your contributions are licensed under the same terms.
 
-There is no CLA to sign.
+**There is no CLA.** You keep the copyright in your own work — nothing is assigned to anyone.
+
+Instead the project uses the **Developer Certificate of Origin**: you add a `Signed-off-by` line to your commits, certifying you have the right to submit the code. Git writes it for you:
+
+```bash
+git commit -s -m "fix: handle empty IMAP folder listing"
+```
+
+Forgot on your last commit? `git commit --amend -s --no-edit`. Across a branch? `git rebase --signoff main`.
+
+See [DCO.md](DCO.md) for the full text and the reasoning behind choosing a DCO over a CLA.
