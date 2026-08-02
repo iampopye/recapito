@@ -1,6 +1,8 @@
 'use client';
 
 import type { IMessage } from '@recapito/shared';
+import { MessageBody } from './MessageBody';
+import { MessageAttachments } from './MessageAttachments';
 
 interface MessageListProps {
   messages: IMessage[];
@@ -42,20 +44,17 @@ export function MessageList({ messages }: MessageListProps) {
             <p className="text-xs text-gray-500">{formatDate(message.receivedAt)}</p>
           </div>
 
-          <div className="prose prose-sm max-w-none">
-            {message.bodyHtml ? (
-              <div
-                dangerouslySetInnerHTML={{ __html: message.bodyHtml }}
-                className="text-gray-700"
-              />
-            ) : message.bodyText ? (
-              <pre className="whitespace-pre-wrap font-sans text-gray-700 text-sm">
-                {message.bodyText}
-              </pre>
-            ) : (
-              <p className="text-gray-400 italic">No content</p>
-            )}
+          {/*
+            Body rendering is isolated in MessageBody, which puts sender-supplied
+            HTML inside a sandboxed iframe. Do not replace this with
+            dangerouslySetInnerHTML -- that ran arbitrary sender markup in this
+            origin and exposed the session token in localStorage.
+          */}
+          <div className="max-w-none">
+            <MessageBody bodyHtml={message.bodyHtml} bodyText={message.bodyText} />
           </div>
+
+          <MessageAttachments messageId={message.id} />
         </div>
       ))}
     </div>

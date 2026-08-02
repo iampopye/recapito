@@ -436,6 +436,49 @@ class ApiClient {
   async useTemplate(id: string): Promise<ITemplate> {
     return this.request<ITemplate>(`/templates/${id}/use`, { method: 'POST' });
   }
+
+  // Attachments
+
+  async getMessageAttachments(messageId: string): Promise<IAttachment[]> {
+    return this.request<IAttachment[]>(`/attachments/message/${messageId}`);
+  }
+
+  /**
+   * Download an attachment as a Blob.
+   *
+   * This cannot go through `request()`, which assumes a JSON response. It also
+   * cannot be a plain `<a href>`: the endpoint requires a bearer token, and a
+   * link element has no way to send one. The caller turns the Blob into an
+   * object URL to trigger the save.
+   */
+  async downloadAttachment(attachmentId: string): Promise<Blob> {
+    const token = this.getToken();
+    const response = await fetch(`${API_URL}/api/attachments/${attachmentId}/download`, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        response.status === 404
+          ? 'Attachment is no longer available'
+          : `Download failed (HTTP ${response.status})`,
+      );
+    }
+
+    return response.blob();
+  }
+}
+
+/** Attachment metadata as returned by the API. Never includes the storage path. */
+export interface IAttachment {
+  id: string;
+  filename: string;
+  contentType: string;
+  size: number;
+  isInline: boolean;
+  contentId: string | null;
 }
 
 export const api = new ApiClient();

@@ -1,0 +1,1456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recapito — self-hosted unified inbox for IMAP</title>
+<meta name="description" content="Recapito is a self-hosted unified inbox. Sync any number of IMAP mailboxes into one threaded interface, search them all at once, and send via your own provider.">
+<link rel="canonical" href="https://iampopye.github.io/recapito/">
+<meta name="theme-color" content="#0B4F8A" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1524" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="light dark">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Recapito">
+<meta property="og:title" content="Recapito — self-hosted unified inbox for IMAP">
+<meta property="og:description" content="Recapito is a self-hosted unified inbox. Sync any number of IMAP mailboxes into one threaded interface, search them all at once, and send via your own provider.">
+<meta property="og:url" content="https://iampopye.github.io/recapito/">
+<meta property="og:image" content="https://iampopye.github.io/recapito/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Recapito — self-hosted unified inbox">
+<meta property="og:locale" content="en">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Recapito — self-hosted unified inbox for IMAP">
+<meta name="twitter:description" content="Recapito is a self-hosted unified inbox. Sync any number of IMAP mailboxes into one threaded interface, search them all at once, and send via your own provider.">
+<meta name="twitter:image" content="https://iampopye.github.io/recapito/og.png">
+<meta name="twitter:image:alt" content="Recapito — self-hosted unified inbox">
+<meta name="twitter:creator" content="@mrtechgarg">
+<meta name="author" content="Karan Garg">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B4F8A'/%3E%3Cpath d='M6 10.5h20v11.5H6z' fill='none' stroke='%23F3F7FC' stroke-width='2.2' stroke-linejoin='round'/%3E%3Cpath d='M6.6 11.2 16 18l9.4-6.8' fill='none' stroke='%23F1856A' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+<script>
+/* No-flash theme bootstrap. Runs before first paint; never throws in private mode. */
+(function () {
+  try {
+    var t = localStorage.getItem('recapito-theme');
+    if (t === 'light' || t === 'dark') {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  } catch (e) { /* storage unavailable — fall back to prefers-color-scheme */ }
+})();
+</script>
+
+<style>
+/* ==========================================================================
+   Recapito landing page
+   Palette: postal blue + airmail red on cool paper / deep navy.
+   Every foreground/background pair below was checked against WCAG AA.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+  --bg:            #F5F7FA;
+  --surface:       #FFFFFF;
+  --surface-2:     #EDF1F6;
+  --text:          #0F2138;  /* 15.11:1 on --bg, 16.22:1 on --surface */
+  --muted:         #4A5C74;  /*  6.36:1 on --bg,  6.83:1 on --surface */
+  --primary:       #0B4F8A;  /*  7.83:1 on --bg,  8.40:1 on --surface */
+  --primary-hover: #093F6E;
+  --on-primary:    #FFFFFF;  /*  8.40:1 on --primary */
+  --accent:        #B03A22;  /*  5.63:1 on --bg,  6.04:1 on --surface */
+  --border:        #D5DDE7;  /* decorative separators only */
+  --border-strong: #75899F;  /*  3.35:1 on --bg — interactive boundaries */
+  --code-comment:  #55677F;  /*  5.10:1 on --surface-2 */
+  --shadow:        0 1px 2px rgba(15, 33, 56, .06), 0 8px 24px -12px rgba(15, 33, 56, .18);
+  --diagram-stroke:#75899F;
+  --diagram-edge:  #4A5C74;
+  --stripe-a:      #0B4F8A;
+  --stripe-b:      #B03A22;
+  --tint:          #E9F0F8;
+  --tint-warm:     #F7EBE6;
+  --radius:        12px;
+  --maxw:          1080px;
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:            #0B1524;
+    --surface:       #111E31;
+    --surface-2:     #16263D;
+    --text:          #E7EDF6;  /* 15.56:1 on --bg, 14.23:1 on --surface */
+    --muted:         #A3B4CA;  /*  8.67:1 on --bg,  7.93:1 on --surface */
+    --primary:       #7CB8F0;  /*  8.69:1 on --bg,  7.95:1 on --surface */
+    --primary-hover: #A6D0F7;
+    --on-primary:    #06121F;  /*  8.95:1 on --primary */
+    --accent:        #F1856A;  /*  7.24:1 on --bg,  6.62:1 on --surface */
+    --border:        #24374F;
+    --border-strong: #5C7794;  /*  3.94:1 on --bg */
+    --code-comment:  #93A6BE;  /*  6.12:1 on --surface-2 */
+    --shadow:        0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -14px rgba(0, 0, 0, .7);
+    --diagram-stroke:#5C7794;
+    --diagram-edge:  #A3B4CA;
+    --stripe-a:      #2E7BC4;
+    --stripe-b:      #C94B2E;
+    --tint:          #142942;
+    --tint-warm:     #2A1A16;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            #0B1524;
+  --surface:       #111E31;
+  --surface-2:     #16263D;
+  --text:          #E7EDF6;
+  --muted:         #A3B4CA;
+  --primary:       #7CB8F0;
+  --primary-hover: #A6D0F7;
+  --on-primary:    #06121F;
+  --accent:        #F1856A;
+  --border:        #24374F;
+  --border-strong: #5C7794;
+  --code-comment:  #93A6BE;
+  --shadow:        0 1px 2px rgba(0, 0, 0, .4), 0 10px 30px -14px rgba(0, 0, 0, .7);
+  --diagram-stroke:#5C7794;
+  --diagram-edge:  #A3B4CA;
+  --stripe-a:      #2E7BC4;
+  --stripe-b:      #C94B2E;
+  --tint:          #142942;
+  --tint-warm:     #2A1A16;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.65;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { line-height: 1.18; letter-spacing: -.02em; margin: 0 0 .5em; font-weight: 680; }
+h1 { font-size: clamp(2.4rem, 7vw, 4rem); letter-spacing: -.035em; }
+h2 { font-size: clamp(1.55rem, 3.6vw, 2.1rem); }
+h3 { font-size: 1.06rem; letter-spacing: -.01em; }
+p  { margin: 0 0 1rem; }
+ul { margin: 0 0 1rem; padding-left: 1.15rem; }
+li { margin-bottom: .4rem; }
+strong { font-weight: 660; }
+
+a { color: var(--primary); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { color: var(--primary-hover); }
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: absolute; left: 8px; top: -100px;
+  z-index: 100;
+  background: var(--primary); color: var(--on-primary);
+  padding: .7rem 1.1rem; border-radius: 0 0 8px 8px;
+  font-weight: 620; text-decoration: none;
+  transition: top .15s ease;
+}
+.skip-link:focus { top: 0; color: var(--on-primary); }
+
+.wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+
+/* --- airmail stripe motif ------------------------------------------------ */
+.stripe {
+  height: 7px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--stripe-a) 0 14px,
+    transparent 14px 28px,
+    var(--stripe-b) 28px 42px,
+    transparent 42px 56px
+  );
+  background-color: var(--surface);
+}
+
+/* --- header -------------------------------------------------------------- */
+.site-header {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+@supports not (backdrop-filter: blur(4px)) { .site-header { background: var(--bg); } }
+
+.header-inner { display: flex; align-items: center; gap: 14px; min-height: 60px; }
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem;
+  font-weight: 700; letter-spacing: -.02em; font-size: 1.02rem;
+  color: var(--text); text-decoration: none; margin-right: auto;
+}
+.brand svg { display: block; flex: none; }
+.nav { display: flex; align-items: center; gap: 4px; }
+.nav a {
+  color: var(--muted); text-decoration: none; font-size: .9rem; font-weight: 560;
+  padding: .4rem .6rem; border-radius: 8px;
+}
+.nav a:hover { color: var(--text); background: var(--surface-2); }
+@media (max-width: 800px) { .nav .nav-optional { display: none; } }
+@media (max-width: 480px) { .nav .nav-compact { display: none; } }
+
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex: none;
+  border: 1px solid var(--border-strong); border-radius: 9px;
+  background: var(--surface); color: var(--text);
+  cursor: pointer; padding: 0;
+}
+.icon-btn:hover { background: var(--surface-2); }
+.icon-btn svg { display: block; }
+.theme-icon-dark { display: none; }
+:root[data-theme="dark"] .theme-icon-light { display: none; }
+:root[data-theme="dark"] .theme-icon-dark  { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .theme-icon-light { display: none; }
+  :root:not([data-theme="light"]) .theme-icon-dark  { display: block; }
+}
+
+/* --- buttons ------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .72rem 1.25rem; border-radius: 10px;
+  font-weight: 620; font-size: .97rem; text-decoration: none;
+  border: 1px solid transparent; cursor: pointer;
+  transition: transform .12s ease, background-color .12s ease, border-color .12s ease;
+}
+.btn-primary { background: var(--primary); color: var(--on-primary); }
+.btn-primary:hover { background: var(--primary-hover); color: var(--on-primary); transform: translateY(-1px); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--surface-2); color: var(--text); transform: translateY(-1px); }
+
+/* --- hero ---------------------------------------------------------------- */
+.hero { padding: clamp(3rem, 8vw, 5.5rem) 0 clamp(2rem, 5vw, 3rem); }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .78rem; font-weight: 640; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 1.1rem;
+}
+.eyebrow::before {
+  content: ""; width: 26px; height: 3px; border-radius: 2px;
+  background: repeating-linear-gradient(-45deg, var(--stripe-b) 0 4px, transparent 4px 8px, var(--stripe-a) 8px 12px, transparent 12px 16px);
+}
+h1 .h1-sub {
+  display: block; font-size: clamp(1.15rem, 3.4vw, 1.75rem);
+  font-weight: 560; letter-spacing: -.02em; color: var(--muted); margin-top: .45rem;
+}
+.lede { font-size: clamp(1.02rem, 2.1vw, 1.16rem); color: var(--muted); max-width: 60ch; }
+.lede strong { color: var(--text); }
+.pronounce {
+  font-size: .92rem; color: var(--muted); margin: 1.1rem 0 1.6rem;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .5rem;
+}
+.pronounce .say {
+  font-family: var(--mono); font-size: .88rem;
+  background: var(--surface-2); border: 1px solid var(--border);
+  padding: .15rem .5rem; border-radius: 6px; color: var(--text); white-space: nowrap;
+}
+.cta-row { display: flex; flex-wrap: wrap; gap: .7rem; margin-bottom: 1.5rem; }
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: .45rem .9rem;
+  font-size: .85rem; color: var(--muted); list-style: none; padding: 0; margin: 0;
+}
+.hero-meta li { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
+.hero-meta li::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex: none; }
+
+.callout-not {
+  margin-top: 2.2rem;
+  background: var(--tint-warm);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 1rem 1.15rem;
+  max-width: 62ch;
+}
+.callout-not p { margin: 0; font-size: .96rem; }
+
+/* --- sections ------------------------------------------------------------ */
+section { padding: clamp(2.6rem, 6vw, 4.2rem) 0; }
+section + section { border-top: 1px solid var(--border); }
+.section-head { max-width: 62ch; margin-bottom: 2rem; }
+.section-head p { color: var(--muted); margin-bottom: 0; }
+.kicker {
+  font-size: .78rem; font-weight: 640; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--accent); margin: 0 0 .6rem;
+}
+
+/* --- is / is not --------------------------------------------------------- */
+.two-col { display: grid; gap: 1.25rem; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .two-col { grid-template-columns: 1fr 1fr; } }
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.4rem; box-shadow: var(--shadow);
+}
+.panel h3 { display: flex; align-items: center; gap: .55rem; margin-bottom: .9rem; }
+.panel ul { list-style: none; padding: 0; margin: 0; }
+.panel li { position: relative; padding-left: 1.65rem; font-size: .96rem; margin-bottom: .7rem; }
+.panel li:last-child { margin-bottom: 0; }
+.mark { flex: none; }
+.list-yes li::before, .list-no li::before {
+  position: absolute; left: 0; top: .06rem; font-weight: 700; font-size: 1rem;
+}
+.list-yes li::before { content: "+"; color: var(--primary); }
+.list-no  li::before { content: "\00d7"; color: var(--accent); }
+
+/* --- feature grid -------------------------------------------------------- */
+.grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 620px) { .grid { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 940px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.15rem 1.2rem;
+  transition: transform .14s ease, border-color .14s ease;
+}
+.card:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.card h3 { margin-bottom: .35rem; }
+.card p { margin: 0; font-size: .92rem; color: var(--muted); }
+.card .ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 9px;
+  background: var(--tint); color: var(--primary); margin-bottom: .75rem;
+}
+.card .ico svg { display: block; }
+.tag {
+  display: inline-block; font-size: .68rem; font-weight: 660; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--accent); background: var(--tint-warm);
+  border-radius: 5px; padding: .1rem .4rem; margin-left: .4rem; vertical-align: 2px;
+}
+
+/* --- highlight band ------------------------------------------------------ */
+.band {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: clamp(1.3rem, 3vw, 2rem);
+  box-shadow: var(--shadow);
+}
+.band-grid { display: grid; gap: 1.5rem; grid-template-columns: 1fr; }
+@media (min-width: 860px) { .band-grid { grid-template-columns: 1.05fr .95fr; align-items: center; } }
+.stat-list { list-style: none; padding: 0; margin: 0; display: grid; gap: .8rem; }
+.stat-list li { display: flex; gap: .8rem; margin: 0; align-items: flex-start; }
+.stat-list .n {
+  font-family: var(--mono); font-size: .78rem; font-weight: 700; color: var(--primary);
+  background: var(--tint); border-radius: 6px; padding: .18rem .45rem; flex: none; margin-top: .15rem;
+}
+.stat-list p { margin: 0; font-size: .93rem; color: var(--muted); }
+.stat-list b { color: var(--text); font-weight: 620; }
+
+/* --- security list ------------------------------------------------------- */
+.sec-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+@media (min-width: 780px) { .sec-list { grid-template-columns: 1fr 1fr; } }
+.sec-list li {
+  margin: 0; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.1rem 1.2rem;
+  border-top: 3px solid var(--primary);
+}
+.sec-list h3 { margin-bottom: .3rem; }
+.sec-list p { margin: 0; font-size: .92rem; color: var(--muted); }
+
+/* --- code / quick start -------------------------------------------------- */
+.steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: grid; gap: 1.1rem; }
+.steps > li { margin: 0; counter-increment: step; }
+.step-head { display: flex; align-items: baseline; gap: .7rem; margin-bottom: .5rem; }
+.step-head::before {
+  content: counter(step);
+  font-family: var(--mono); font-size: .78rem; font-weight: 700;
+  color: var(--on-primary); background: var(--primary);
+  width: 22px; height: 22px; border-radius: 6px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  transform: translateY(2px);
+}
+.step-head h3 { margin: 0; }
+.step-note { font-size: .9rem; color: var(--muted); margin: .55rem 0 0; }
+
+.codeblock { position: relative; }
+.codeblock pre {
+  margin: 0; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: .95rem 1rem; padding-right: 6.2rem;
+  overflow-x: auto; font-family: var(--mono); font-size: .845rem; line-height: 1.7;
+  color: var(--text); tab-size: 2;
+}
+.codeblock pre:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.codeblock code { font: inherit; color: inherit; white-space: pre; }
+.codeblock .c { color: var(--code-comment); }
+.copy-btn {
+  position: absolute; top: 8px; right: 8px;
+  font-size: .76rem; font-weight: 620; font-family: var(--font);
+  padding: .3rem .6rem; border-radius: 7px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-strong); cursor: pointer;
+}
+.copy-btn:hover { background: var(--bg); }
+p code, li code, td code {
+  font-family: var(--mono); font-size: .86em;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 5px; padding: .06em .35em;
+}
+
+/* --- diagram ------------------------------------------------------------- */
+.diagram-scroll {
+  overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); padding: 1rem;
+}
+.diagram-scroll:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.diagram-scroll svg { display: block; width: 100%; min-width: 700px; height: auto; }
+.d-node  { fill: var(--surface-2); stroke: var(--diagram-stroke); stroke-width: 1.4; }
+.d-group { fill: none; stroke: var(--diagram-stroke); stroke-width: 1.4; stroke-dasharray: 5 5; }
+.d-db    { fill: var(--tint); stroke: var(--diagram-stroke); stroke-width: 1.4; }
+.d-ext   { fill: var(--tint-warm); stroke: var(--diagram-stroke); stroke-width: 1.4; }
+.d-t     { fill: var(--text); font-size: 13.5px; font-weight: 630; font-family: var(--font); }
+.d-s     { fill: var(--muted); font-size: 11.5px; font-family: var(--font); }
+.d-lab   { fill: var(--muted); font-size: 11px; font-family: var(--font); font-style: italic; }
+.d-edge  { stroke: var(--diagram-edge); stroke-width: 1.6; fill: none; }
+.d-edge-dash { stroke: var(--diagram-edge); stroke-width: 1.6; fill: none; stroke-dasharray: 5 4; }
+.d-arrow { fill: var(--diagram-edge); }
+details.src { margin-top: 1rem; }
+details.src summary {
+  cursor: pointer; font-size: .9rem; font-weight: 600; color: var(--primary);
+  padding: .35rem 0; width: fit-content;
+}
+details.src summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+details.src .codeblock { margin-top: .7rem; }
+
+/* --- roadmap ------------------------------------------------------------- */
+.roadmap { list-style: none; padding: 0; margin: 0; display: grid; gap: .8rem; }
+@media (min-width: 780px) { .roadmap { grid-template-columns: 1fr 1fr; } }
+.roadmap li {
+  margin: 0; padding: 1rem 1.15rem; border: 1px dashed var(--border-strong);
+  border-radius: var(--radius); background: transparent;
+}
+.roadmap li.top { border-style: solid; border-color: var(--accent); background: var(--tint-warm); }
+.roadmap h3 { margin-bottom: .25rem; }
+.roadmap p { margin: 0; font-size: .92rem; color: var(--muted); }
+.pill {
+  display: inline-block; font-size: .68rem; font-weight: 680; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--on-primary); background: var(--accent);
+  border-radius: 5px; padding: .1rem .45rem; margin-left: .45rem; vertical-align: 2px;
+}
+
+/* --- faq ----------------------------------------------------------------- */
+.faq { display: grid; gap: .7rem; }
+.faq details {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.faq summary {
+  cursor: pointer; list-style: none; padding: 1rem 1.2rem;
+  font-weight: 620; font-size: 1rem;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; font-family: var(--mono); font-size: 1.15rem; font-weight: 700;
+  color: var(--primary); line-height: 1.2; flex: none;
+}
+.faq details[open] summary::after { content: "\2212"; }
+.faq summary:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; border-radius: var(--radius); }
+.faq .answer { padding: 0 1.2rem 1.1rem; color: var(--muted); font-size: .95rem; }
+.faq .answer p:last-child { margin-bottom: 0; }
+
+/* --- contributing -------------------------------------------------------- */
+.contrib-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 780px) { .contrib-grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* --- footer -------------------------------------------------------------- */
+.site-footer { background: var(--surface); border-top: 1px solid var(--border); }
+.footer-grid {
+  display: grid; gap: 2rem; grid-template-columns: 1fr;
+  padding: clamp(2.2rem, 5vw, 3.2rem) 0 1.6rem;
+}
+@media (min-width: 800px) { .footer-grid { grid-template-columns: 1.25fr 1fr; } }
+.footer-grid h2 { font-size: 1.05rem; margin-bottom: .5rem; }
+.footer-grid p { font-size: .92rem; color: var(--muted); }
+.social { display: flex; gap: .6rem; margin-top: .9rem; padding: 0; list-style: none; }
+.social li { margin: 0; }
+.social a {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid var(--border-strong); color: var(--text); background: var(--bg);
+}
+.social a:hover { background: var(--surface-2); color: var(--primary); border-color: var(--primary); }
+.social svg { display: block; }
+.footer-bottom {
+  border-top: 1px solid var(--border); padding: 1.1rem 0 2rem;
+  display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; justify-content: space-between;
+  font-size: .86rem; color: var(--muted);
+}
+.footer-bottom p { margin: 0; }
+
+.visually-hidden {
+  position: absolute !important; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important; scroll-behavior: auto !important;
+  }
+  .btn:hover, .card:hover { transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="brand" href="#top">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="7" fill="currentColor" opacity=".08"></rect>
+        <path d="M6 10.5h20v11.5H6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"></path>
+        <path d="M6.6 11.2 16 18l9.4-6.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".6"></path>
+      </svg>
+      Recapito
+    </a>
+    <nav class="nav" aria-label="Section navigation">
+      <a class="nav-optional" href="#features">Features</a>
+      <a class="nav-optional" href="#security">Security</a>
+      <a class="nav-compact" href="#quick-start">Quick start</a>
+      <a class="nav-optional" href="#faq">FAQ</a>
+      <a href="https://github.com/iampopye/recapito">GitHub</a>
+    </nav>
+    <button class="icon-btn" id="theme-toggle" type="button" aria-label="Switch to dark theme">
+      <svg class="theme-icon-light" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path>
+      </svg>
+      <svg class="theme-icon-dark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="4.2"></circle>
+        <path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"></path>
+      </svg>
+    </button>
+  </div>
+</header>
+<div class="stripe" role="presentation"></div>
+
+<main id="main">
+
+  <!-- ===================== HERO ===================== -->
+  <div class="hero" id="top">
+    <div class="wrap">
+      <p class="eyebrow">Self-hosted · AGPL-3.0</p>
+      <h1>Recapito<span class="h1-sub">One inbox for every mailbox you already have.</span></h1>
+      <p class="lede">
+        Connect any number of <strong>IMAP mailboxes</strong>, read them in a single threaded
+        interface, and send replies through <strong>your own provider</strong>. A NestJS API, a
+        Next.js web client, an IMAP sync daemon and PostgreSQL — packaged as a Docker Compose
+        stack that runs on your server, not somebody else's.
+      </p>
+      <p class="pronounce">
+        <span class="say">reh-ka-PEE-toh</span>
+        <span>Italian for <em>delivery</em> — and for the contact details you give someone so they can reach you.</span>
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/iampopye/recapito">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+          View on GitHub
+        </a>
+        <a class="btn btn-secondary" href="#quick-start">Read the quick start</a>
+      </div>
+      <ul class="hero-meta">
+        <li>NestJS 10 + Next.js 14</li>
+        <li>PostgreSQL 16</li>
+        <li>Docker Compose</li>
+        <li>IMAP IDLE sync daemon</li>
+      </ul>
+
+      <div class="callout-not">
+        <p>
+          <strong>Recapito is not a mail server.</strong> It does not listen on port 25, does not
+          receive SMTP, and cannot be the MX host for your domain. It sits on top of mailboxes you
+          already have — Gmail, Fastmail, Zoho, or any IMAP host — and gives you one place to read
+          and answer them.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== IS / IS NOT ===================== -->
+  <section id="what-it-is" aria-labelledby="what-it-is-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Set expectations first</p>
+        <h2 id="what-it-is-h">What Recapito is, and what it isn't</h2>
+        <p>Getting this wrong is the fastest way to be disappointed by it, so it is worth being blunt.</p>
+      </div>
+      <div class="two-col">
+        <div class="panel">
+          <h3>
+            <svg class="mark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false" style="color: var(--primary)"><path d="M20 6 9 17l-5-5"></path></svg>
+            It is
+          </h3>
+          <ul class="list-yes">
+            <li>A <strong>unified inbox</strong>. Add IMAP accounts; Recapito syncs them into one threaded reading and reply interface.</li>
+            <li><strong>Self-hosted.</strong> Your server, your Postgres. No hosted tier, no account to create, nothing phoning home.</li>
+            <li>A <strong>sending front-end</strong> for providers you already use — Mailgun, Brevo, or any SMTP host.</li>
+            <li><strong>Multi-user</strong>, with per-user mailboxes and an admin flag for managing accounts.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>
+            <svg class="mark" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false" style="color: var(--accent)"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+            It is not
+          </h3>
+          <ul class="list-no">
+            <li>A <strong>mail server</strong>. It does not receive SMTP and cannot be your domain's MX host.</li>
+            <li>The <strong>authoritative store</strong> for your mail — your IMAP provider is. Drop the Recapito database and your mail re-syncs.</li>
+            <li>A <strong>replacement for Postfix, Dovecot, Mailcow or Mail-in-a-Box.</strong> It sits on top of what they provide.</li>
+            <li>A <strong>bulk-mail or marketing platform.</strong> There is no campaign builder, list management, or unsubscribe handling.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== WHY IT'S FAST ===================== -->
+  <section id="why" aria-labelledby="why-h">
+    <div class="wrap">
+      <div class="band">
+        <div class="band-grid">
+          <div>
+            <p class="kicker">The architectural bet</p>
+            <h2 id="why-h">Your mail is mirrored locally, so it behaves like local data</h2>
+            <p>
+              Most multi-account mail clients ask your IMAP servers a question every time you
+              search or open a folder, and you wait for the slowest one. Recapito doesn't. A sync
+              daemon mirrors your messages into PostgreSQL as they arrive, and everything the
+              interface does — searching, threading, filtering by label, acting on fifty
+              conversations at once — runs against that local copy.
+            </p>
+            <p style="margin-bottom:0">
+              Your provider stays the source of truth. The mirror is a cache you can throw away
+              and rebuild.
+            </p>
+          </div>
+          <ul class="stat-list">
+            <li>
+              <span class="n" aria-hidden="true">01</span>
+              <p><b>Search spans every mailbox at once.</b> One query over threads and messages, not one query per account.</p>
+            </li>
+            <li>
+              <span class="n" aria-hidden="true">02</span>
+              <p><b>Threading is computed once, on write.</b> Conversations are assembled as mail lands rather than reassembled on every page view.</p>
+            </li>
+            <li>
+              <span class="n" aria-hidden="true">03</span>
+              <p><b>Bulk actions don't wait on IMAP.</b> Multi-select and move, archive, mark spam or delete without a round trip per message.</p>
+            </li>
+            <li>
+              <span class="n" aria-hidden="true">04</span>
+              <p><b>New mail arrives by push.</b> The daemon holds an IMAP IDLE connection per mailbox for INBOX, so nothing waits on a poll timer.</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Built and working today</p>
+        <h2 id="features-h">Features</h2>
+        <p>
+          Everything below exists in the codebase now. Things that don't are in
+          <a href="#roadmap">the roadmap</a>, separately and deliberately.
+        </p>
+      </div>
+
+      <div class="grid">
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect><path d="m3.2 6.2 8.8 6.3 8.8-6.3"></path></svg></span>
+          <h3>Unified inbox</h3>
+          <p>Any number of IMAP mailboxes, read as one stream. Per-user accounts, each with its own credentials and send provider.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h13M10 18h10"></path><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="7.5" cy="18" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>
+          <h3>Threaded conversations</h3>
+          <p>Replies group into threads across mailboxes, with de-duplication on the RFC message ID so nothing is stored twice.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7.5A2 2 0 0 1 5 5.5h3.6l2 2.4H19a2 2 0 0 1 2 2v7.6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></span>
+          <h3>Folders</h3>
+          <p>Inbox, Sent, Drafts, Spam, Trash and Archive, navigable from the sidebar across every connected account.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.3"></circle><path d="m15.4 15.4 4.4 4.4"></path></svg></span>
+          <h3>Cross-mailbox search</h3>
+          <p>Search threads and messages from every account in one query, served from Postgres rather than from your mail hosts.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.5 4.5 13.5H11l-1 8 8.5-11H12z"></path></svg></span>
+          <h3>Real-time IMAP IDLE sync</h3>
+          <p>A standalone daemon holds an IDLE connection per mailbox for INBOX, so new mail arrives by server push. Sent, Spam and Trash get a sweep every five minutes.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 12.5 12.8 20.2a3.6 3.6 0 0 1-5.1 0l-4-4a3.6 3.6 0 0 1 0-5.1L11.4 3.4h6.6a2.5 2.5 0 0 1 2.5 2.5z"></path><circle cx="16.4" cy="7.6" r="1.4"></circle></svg></span>
+          <h3>Labels</h3>
+          <p>Categorise threads with your own labels and list every thread carrying one.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4.2l10-10a2.6 2.6 0 0 0-3.7-3.7l-10 10z"></path><path d="M13.6 7.4 16.6 10.4"></path></svg></span>
+          <h3>Drafts with autosave</h3>
+          <p>Half-written replies persist server-side as you type, so a closed tab is not a lost message.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"></circle><path d="M12 7.2V12l3.2 2"></path></svg></span>
+          <h3>Scheduled send</h3>
+          <p>Give a draft a send time and a background worker dispatches it — checking every minute, retrying up to three times, through the same delivery path as an immediate send.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18.5V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12.5"></path><path d="M7.5 15.5c2.5-4.5 3.5-7 5-7s1 3-1.5 5.5 3-1.5 4.5-1"></path><path d="M4 18.5h16"></path></svg></span>
+          <h3>Signatures</h3>
+          <p>Multiple signatures per user, one markable as the default.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2.2"></rect><path d="M7.5 9h9M7.5 12.5h9M7.5 16h5"></path></svg></span>
+          <h3>Reply templates</h3>
+          <p>Save the answers you keep retyping and drop them into a reply with a <code>/shortcut</code> while composing.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="6" height="6" rx="1.6"></rect><rect x="3.5" y="13.5" width="6" height="6" rx="1.6"></rect><path d="M13 7.5h7.5M13 16.5h7.5"></path></svg></span>
+          <h3>Bulk actions</h3>
+          <p>Multi-select threads, then move, archive, mark spam or delete them in one pass. Star and mark-as-read too.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="8.5" r="3.6"></circle><path d="M3.6 19.4a6 6 0 0 1 11.8 0"></path><path d="M17 8h4M19 6v4"></path></svg></span>
+          <h3>Contacts</h3>
+          <p>An address book with favourites and a frequently-contacted view, built from the mail you actually exchange.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3.4"></circle><path d="M2.8 19.2a5.8 5.8 0 0 1 11.4 0"></path><circle cx="17" cy="7.5" r="2.6"></circle><path d="M15 14.4a5 5 0 0 1 6.3 3.3"></path></svg></span>
+          <h3>Multi-user with admin</h3>
+          <p>Separate users, each with their own mailboxes, providers and signatures. An admin flag covers user, mailbox and provider management.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5 12 20a5.2 5.2 0 0 1-7.4-7.4l8-8a3.5 3.5 0 0 1 4.9 5l-8 8a1.8 1.8 0 0 1-2.5-2.5l7.4-7.4"></path></svg></span>
+          <h3>Attachments <span class="tag">API only</span></h3>
+          <p>Incoming attachments are extracted during sync and written outside the database, capped at 25&nbsp;MB by default. They are listed and downloaded through the API today; a compose-side interface is on the roadmap.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3.2 12 17.3-7.5-3.4 16.2-4.6-5.1z"></path><path d="m12.5 15.6-1.1 4.6-1.9-4.9"></path></svg></span>
+          <h3>Your choice of sending path</h3>
+          <p>Send through Mailgun, Brevo's transactional API, or any plain SMTP host. Several providers per user, one default, and a per-mailbox assignment. Mailgun delivery and failure events are tracked via signature-verified webhooks.</p>
+        </article>
+
+        <article class="card">
+          <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"></path></svg></span>
+          <h3>Health endpoints</h3>
+          <p><code>/api/health</code>, <code>/api/health/live</code> and <code>/api/health/ready</code> for uptime monitoring, plus keyboard shortcuts in the inbox: <code>c</code> compose, <code>r</code> refresh, <code>/</code> search.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SECURITY ===================== -->
+  <section id="security" aria-labelledby="security-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Engineering judgement, not a feature list</p>
+        <h2 id="security-h">Built to be run safely</h2>
+        <p>
+          Recapito holds the passwords to your email accounts. That fact drove several decisions
+          that are deliberately inconvenient, because the convenient version of each one is how
+          self-hosted software quietly leaks mailboxes.
+        </p>
+      </div>
+      <ul class="sec-list">
+        <li>
+          <h3>Credentials encrypted at rest with AES-256-GCM</h3>
+          <p>
+            IMAP passwords, SMTP passwords and provider API keys are encrypted before they reach
+            the database, with a fresh random 96-bit IV per value and a version-prefixed envelope
+            so the scheme can be rotated later. Authenticated encryption means tampered ciphertext
+            fails at decrypt time instead of being replayed at a mail server. Login passwords are
+            different — those are bcrypt-hashed and never decryptable, which is correct for a
+            credential the server only ever verifies.
+          </p>
+        </li>
+        <li>
+          <h3>Mandatory secrets, with no insecure fallback</h3>
+          <p>
+            <code>JWT_SECRET</code> and <code>ENCRYPTION_KEY</code> have no default, no fallback
+            and no development shortcut. The API validates both at startup and refuses to boot if
+            either is missing, too weak, or set to a well-known placeholder such as
+            <code>changeme</code>. An application that boots successfully while signing tokens
+            with a guessable secret looks healthy and is completely compromised; failing to start
+            is the safer outcome.
+          </p>
+        </li>
+        <li>
+          <h3>Registration closed by default, first account becomes admin</h3>
+          <p>
+            A self-hosted instance is reachable by anyone who finds the URL, so public sign-up is
+            off unless you set <code>ALLOW_REGISTRATION=true</code>. The very first account is
+            always allowed — otherwise a fresh deployment could never be bootstrapped — and it is
+            granted administrator rights. Everyone after that is created deliberately.
+          </p>
+        </li>
+        <li>
+          <h3>Attachments are always downloads, never rendered inline</h3>
+          <p>
+            An email attachment is untrusted content from an arbitrary sender. Every one is served
+            as <code>application/octet-stream</code> with an attachment disposition,
+            <code>X-Content-Type-Options: nosniff</code> and a restrictive
+            <code>Content-Security-Policy</code>, so a malicious <code>.html</code> or
+            <code>.svg</code> can never execute on the application's origin with your session. The
+            on-disk filename is a random UUID; the sender's filename is a database column, sanitised
+            back into a header at download time.
+          </p>
+        </li>
+      </ul>
+      <p style="margin-top:1.4rem; color:var(--muted); font-size:.94rem; max-width:70ch">
+        The project is equally explicit about the gaps: message bodies are stored unencrypted so
+        that server-side search works, there is no built-in rate limiting on the auth endpoints,
+        and there is no audit log. All of it — plus key-rotation consequences and a deployment
+        hardening checklist — is written up in
+        <a href="https://github.com/iampopye/recapito/blob/main/SECURITY.md">SECURITY.md</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== QUICK START ===================== -->
+  <section id="quick-start" aria-labelledby="quick-start-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Four commands</p>
+        <h2 id="quick-start-h">Quick start</h2>
+        <p>You need Docker with the Compose plugin, and nothing else. This brings up Postgres, the API, the web client and the IMAP daemon.</p>
+      </div>
+
+      <ol class="steps">
+        <li>
+          <div class="step-head"><h3>Clone the repository</h3></div>
+          <div class="codeblock">
+            <pre id="code-clone" tabindex="0" role="group" aria-label="Command: clone the repository"><code>git clone https://github.com/iampopye/recapito.git
+cd recapito</code></pre>
+            <button class="copy-btn" type="button" data-copy="code-clone" aria-label="Copy the clone command">Copy</button>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-head"><h3>Create your environment file</h3></div>
+          <div class="codeblock">
+            <pre id="code-env" tabindex="0" role="group" aria-label="Command: copy the example environment file"><code>cp .env.example .env</code></pre>
+            <button class="copy-btn" type="button" data-copy="code-env" aria-label="Copy the environment file command">Copy</button>
+          </div>
+        </li>
+
+        <li>
+          <div class="step-head"><h3>Generate the secrets</h3></div>
+          <div class="codeblock">
+            <pre id="code-secrets" tabindex="0" role="group" aria-label="Commands: generate the required secrets"><code><span class="c"># Signs session tokens</span>
+echo "JWT_SECRET=$(openssl rand -hex 32)"
+
+<span class="c"># Encrypts stored IMAP and SMTP credentials — back this up</span>
+echo "ENCRYPTION_KEY=$(openssl rand -hex 32)"
+
+<span class="c"># Postgres password — no default is baked into the code</span>
+echo "DATABASE_PASSWORD=$(openssl rand -base64 32)"</code></pre>
+            <button class="copy-btn" type="button" data-copy="code-secrets" aria-label="Copy the secret generation commands">Copy</button>
+          </div>
+          <p class="step-note">
+            Paste each line into <code>.env</code>. <code>ENCRYPTION_KEY</code> must be exactly 64
+            hex characters — a 32-byte key. Store it somewhere separate from your database backups:
+            an archive holding both is, functionally, a backup of your plaintext mailbox passwords.
+          </p>
+        </li>
+
+        <li>
+          <div class="step-head"><h3>Bring the stack up</h3></div>
+          <div class="codeblock">
+            <pre id="code-up" tabindex="0" role="group" aria-label="Commands: start the Docker Compose stack"><code>cd docker
+docker compose --env-file ../.env up -d</code></pre>
+            <button class="copy-btn" type="button" data-copy="code-up" aria-label="Copy the Docker Compose command">Copy</button>
+          </div>
+          <p class="step-note">
+            The Compose files live in <code>docker/</code>, so <code>--env-file</code> is what
+            points them at the <code>.env</code> in the repository root. Migrations run on API
+            startup — there is no separate migration step.
+          </p>
+        </li>
+      </ol>
+
+      <p style="margin-top:1.6rem">
+        Open <code>http://localhost:3000</code> and create the first account, which becomes the
+        administrator. Add a mailbox with its IMAP host, port and credentials; the daemon picks it
+        up and starts syncing. To send, configure Mailgun under <strong>Settings</strong>, or add a
+        Brevo or SMTP provider under <strong>SMTP Providers</strong>.
+        <a href="https://github.com/iampopye/recapito/blob/main/DEPLOYMENT.md">DEPLOYMENT.md</a>
+        covers putting it on a real server, with nginx and Let's Encrypt.
+      </p>
+      <p aria-live="polite" class="visually-hidden" id="copy-status"></p>
+    </div>
+  </section>
+
+  <!-- ===================== ARCHITECTURE ===================== -->
+  <section id="architecture" aria-labelledby="architecture-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Three services and one database</p>
+        <h2 id="architecture-h">Architecture</h2>
+        <p>
+          Note where the IMAP connections live: the browser never talks to IMAP, and neither does
+          the API. Only the daemon does.
+        </p>
+      </div>
+
+      <div class="diagram-scroll" tabindex="0" role="group" aria-label="Architecture diagram, horizontally scrollable">
+        <svg viewBox="0 0 920 480" role="img" aria-labelledby="arch-title arch-desc">
+          <title id="arch-title">Recapito architecture</title>
+          <desc id="arch-desc">The browser talks only to the Next.js frontend, which calls the NestJS API over REST. The API reads and writes PostgreSQL and sends mail through Mailgun, Brevo or SMTP, which return delivery webhooks to the API. A separate imap-daemon holds IMAP IDLE connections to your mail providers and writes threads and messages directly into PostgreSQL.</desc>
+
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path class="d-arrow" d="M 0 0 L 10 5 L 0 10 z"></path>
+            </marker>
+          </defs>
+
+          <!-- self-hosted boundary -->
+          <rect class="d-group" x="150" y="40" width="460" height="420" rx="14"></rect>
+          <text class="d-lab" x="166" y="62">Recapito — self-hosted</text>
+
+          <!-- browser -->
+          <rect class="d-node" x="6" y="76" width="120" height="60" rx="10"></rect>
+          <text class="d-t" x="66" y="112" text-anchor="middle">Browser</text>
+
+          <!-- frontend -->
+          <rect class="d-node" x="176" y="76" width="190" height="60" rx="10"></rect>
+          <text class="d-t" x="271" y="102" text-anchor="middle">Frontend</text>
+          <text class="d-s" x="271" y="120" text-anchor="middle">Next.js 14 · :3000</text>
+
+          <!-- api -->
+          <rect class="d-node" x="176" y="196" width="190" height="60" rx="10"></rect>
+          <text class="d-t" x="271" y="222" text-anchor="middle">API</text>
+          <text class="d-s" x="271" y="240" text-anchor="middle">NestJS 10 · :3001/api</text>
+
+          <!-- daemon -->
+          <rect class="d-node" x="176" y="352" width="190" height="60" rx="10"></rect>
+          <text class="d-t" x="271" y="378" text-anchor="middle">imap-daemon</text>
+          <text class="d-s" x="271" y="396" text-anchor="middle">Node · imapflow</text>
+
+          <!-- database -->
+          <rect class="d-db" x="440" y="266" width="150" height="66" rx="10"></rect>
+          <text class="d-t" x="515" y="294" text-anchor="middle">PostgreSQL 16</text>
+          <text class="d-s" x="515" y="312" text-anchor="middle">the mirror</text>
+
+          <!-- external -->
+          <rect class="d-ext" x="660" y="160" width="252" height="66" rx="10"></rect>
+          <text class="d-t" x="786" y="188" text-anchor="middle">Send providers</text>
+          <text class="d-s" x="786" y="206" text-anchor="middle">Mailgun · Brevo · SMTP</text>
+
+          <rect class="d-ext" x="660" y="352" width="252" height="66" rx="10"></rect>
+          <text class="d-t" x="786" y="380" text-anchor="middle">Your IMAP providers</text>
+          <text class="d-s" x="786" y="398" text-anchor="middle">Gmail · Fastmail · Zoho · any host</text>
+
+          <!-- edges -->
+          <path class="d-edge" d="M126 106 H168" marker-end="url(#ah)"></path>
+
+          <path class="d-edge" d="M271 136 V188" marker-end="url(#ah)"></path>
+          <text class="d-lab" x="282" y="168">REST over HTTP</text>
+
+          <path class="d-edge" d="M366 240 H404 V299 H432" marker-end="url(#ah)"></path>
+          <path class="d-edge" d="M366 380 H404 V320 H432" marker-end="url(#ah)"></path>
+          <text class="d-lab" x="378" y="352">write threads</text>
+          <text class="d-lab" x="378" y="366">and messages</text>
+
+          <path class="d-edge" d="M366 208 H652" marker-end="url(#ah)"></path>
+          <text class="d-lab" x="470" y="200">send mail</text>
+
+          <path class="d-edge-dash" d="M660 226 H480 V246 H374" marker-end="url(#ah)"></path>
+          <text class="d-lab" x="492" y="242">delivery webhooks</text>
+
+          <path class="d-edge" d="M366 400 H652" marker-end="url(#ah)"></path>
+          <text class="d-lab" x="470" y="392">IMAP IDLE + fetch</text>
+        </svg>
+      </div>
+
+      <details class="src">
+        <summary>Mermaid source for this diagram</summary>
+        <div class="codeblock">
+          <pre id="code-mermaid" tabindex="0" role="group" aria-label="Mermaid source for the architecture diagram"><code>flowchart LR
+    User([Browser])
+
+    subgraph self["Recapito — self-hosted"]
+        FE["Frontend&lt;br/&gt;Next.js 14 · :3000"]
+        API["API&lt;br/&gt;NestJS 10 · :3001/api"]
+        DAEMON["imap-daemon&lt;br/&gt;Node · imapflow"]
+        DB[("PostgreSQL 16")]
+    end
+
+    IMAP["Your IMAP providers&lt;br/&gt;Gmail · Fastmail · Zoho · any IMAP host"]
+    SEND["Send providers&lt;br/&gt;Mailgun · Brevo · SMTP"]
+
+    User --&gt; FE
+    FE --&gt;|REST over HTTP| API
+    API --&gt; DB
+    API --&gt;|send mail| SEND
+    SEND -.-&gt;|delivery webhooks| API
+    DAEMON --&gt;|IMAP IDLE + fetch| IMAP
+    DAEMON --&gt;|write threads and messages| DB</code></pre>
+          <button class="copy-btn" type="button" data-copy="code-mermaid" aria-label="Copy the Mermaid diagram source">Copy</button>
+        </div>
+      </details>
+
+      <div class="grid" style="margin-top:1.6rem">
+        <article class="card">
+          <h3>Frontend</h3>
+          <p><code>apps/frontend</code> — Next.js 14 App Router, React 18, Tailwind. Reads and writes exclusively through the API.</p>
+        </article>
+        <article class="card">
+          <h3>API</h3>
+          <p><code>apps/backend</code> — NestJS 10, TypeORM, Passport JWT. Serves everything the UI does, and handles outbound sending.</p>
+        </article>
+        <article class="card">
+          <h3>imap-daemon</h3>
+          <p><code>apps/imap-daemon</code> — one IMAP IDLE connection per active mailbox, writing straight into Postgres. No HTTP surface of its own.</p>
+        </article>
+      </div>
+      <p style="margin-top:1.2rem; color:var(--muted); font-size:.94rem; max-width:72ch">
+        New-mail detection works on a rolling 30-minute IMAP <code>SINCE</code> window, fetched in
+        batches of 50, de-duplicated on the RFC message ID. A message is never stored twice, and a
+        brief daemon outage is caught up automatically on reconnect.
+      </p>
+    </div>
+  </section>
+
+  <!-- ===================== ROADMAP ===================== -->
+  <section id="roadmap" aria-labelledby="roadmap-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Not built yet</p>
+        <h2 id="roadmap-h">Roadmap</h2>
+        <p>
+          None of this exists in the codebase today. It is listed here so nobody installs Recapito
+          expecting it — and because these are the best places to start if you want to contribute
+          something substantial.
+        </p>
+      </div>
+      <ul class="roadmap">
+        <li class="top">
+          <h3>OAuth2 / XOAUTH2 for Gmail and Outlook <span class="pill">Top priority</span></h3>
+          <p>
+            Mailboxes authenticate with a stored username and password today. Google turned off
+            plain password sign-in for IMAP in 2024, so a Gmail account now needs an app password
+            and a Workspace admin can switch even that off. Token-based authentication is the
+            single change that most widens what Recapito can connect to.
+          </p>
+        </li>
+        <li>
+          <h3>Rich-text compose</h3>
+          <p>Compose is a plain textarea. A proper editor — formatting, links, inline quoting — is not built.</p>
+        </li>
+        <li>
+          <h3>Filters and rules</h3>
+          <p>No automatic categorisation. Labels and folders are applied by hand.</p>
+        </li>
+        <li>
+          <h3>Email forwarding</h3>
+          <p>You can reply and compose. Forwarding an existing message is not implemented.</p>
+        </li>
+        <li>
+          <h3>Saved searches</h3>
+          <p>Search runs, but there is no way to pin a query and come back to it.</p>
+        </li>
+        <li>
+          <h3>Internationalisation</h3>
+          <p>The interface is English-only, with no translation layer to plug other languages into.</p>
+        </li>
+        <li>
+          <h3>Attachment interface</h3>
+          <p>The storage layer, the database table and the download API all exist. Viewing attachments on a message and adding them to an outgoing reply do not.</p>
+        </li>
+        <li>
+          <h3>Test coverage</h3>
+          <p>A handful of specs cover encryption and authentication. Most of the codebase has none — the most useful unglamorous contribution available.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== FAQ ===================== -->
+  <section id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Before you install it</p>
+        <h2 id="faq-h">Frequently asked questions</h2>
+      </div>
+      <div class="faq">
+        <details>
+          <summary>Is Recapito a mail server?</summary>
+          <div class="answer">
+            <p>No. Recapito does not listen on port 25, does not receive SMTP, and cannot be the MX host for your domain. It syncs IMAP mailboxes you already have with providers such as Gmail, Fastmail or Zoho, and sends through Mailgun, Brevo or your own SMTP host. If you want to host mail, you want a mail server such as Postfix, Dovecot, Mailcow or Mail-in-a-Box; Recapito sits on top of one.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Do I have to use Mailgun?</summary>
+          <div class="answer">
+            <p>No. Mailgun, Brevo's transactional API and any plain SMTP host are all supported, and they are configured per user in the interface rather than baked into the deployment. You can register several providers, mark one as the default, and assign a specific provider to a specific mailbox. Receiving mail needs no provider at all — only IMAP access to your existing accounts.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Where is my mail actually stored?</summary>
+          <div class="answer">
+            <p>Your IMAP provider remains the authoritative store. Recapito mirrors messages into PostgreSQL as they arrive so that cross-mailbox search, threading and bulk actions run against local data instead of querying every mail host live. Dropping the Recapito database does not delete your mail — it re-syncs. Message bodies in that mirror are stored unencrypted, because encrypting them would break server-side search; disk or database-level encryption is the lever for that.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Does it work with Gmail?</summary>
+          <div class="answer">
+            <p>Only with an app password today. Mailboxes authenticate with a stored username and password, and Google turned off plain password sign-in for IMAP in 2024, so a Gmail account needs an app password — and a Workspace administrator can disable those. OAuth2 / XOAUTH2 support is the top item on the roadmap for exactly this reason. Any IMAP host that accepts a username and password works now.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Is it ready for production?</summary>
+          <div class="answer">
+            <p>Be careful. This is an early project maintained by one person, and it has not been battle-tested at scale. The security fundamentals are deliberate — credentials encrypted with AES-256-GCM, mandatory secrets with no fallback, registration closed by default — but there is no built-in rate limiting on the authentication endpoints, no audit log, and most of the codebase has no test coverage. Read SECURITY.md and work through the deployment hardening checklist before you put it on the internet.</p>
+          </div>
+        </details>
+        <details>
+          <summary>What does the licence let me do?</summary>
+          <div class="answer">
+            <p>Recapito is licensed under the GNU Affero General Public License v3.0. You can use it for anything, including commercially, at no cost, and you can read, modify and redistribute the source. The catch is the network clause: if you modify Recapito and let other people use your modified version over a network, you must offer those users the source of your changes under the same licence. Running an unmodified copy, or modifying it purely for your own use, obliges you to publish nothing.</p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CONTRIBUTING ===================== -->
+  <section id="contributing" aria-labelledby="contributing-h">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">Open to first-timers</p>
+        <h2 id="contributing-h">Contributing</h2>
+        <p>
+          Contributions are welcome, including small ones and first ones. Documentation fixes,
+          typo corrections and "this instruction did not work for me" issues are genuinely
+          useful — the docs are part of the product.
+        </p>
+      </div>
+      <div class="contrib-grid">
+        <article class="card">
+          <h3>Start with a good first issue</h3>
+          <p>Issues labelled <code>good first issue</code> are scoped to be completable without knowing the whole codebase. If one is unassigned, comment on it and it is yours — no need to ask permission, and no rush to finish.</p>
+        </article>
+        <article class="card">
+          <h3>Getting stuck is fine</h3>
+          <p>Say so in the thread. A half-finished attempt with a question is more useful than silence, and beginner questions are welcome — ask them in an issue.</p>
+        </article>
+        <article class="card">
+          <h3>Read the guide first</h3>
+          <p>CONTRIBUTING.md covers the development setup, how the three services fit together, where to add a feature, the commit convention and what a good pull request looks like.</p>
+        </article>
+      </div>
+      <div class="cta-row" style="margin-top:1.6rem">
+        <a class="btn btn-primary" href="https://github.com/iampopye/recapito/blob/main/CONTRIBUTING.md">Read CONTRIBUTING.md</a>
+        <a class="btn btn-secondary" href="https://github.com/iampopye/recapito/labels/good%20first%20issue">Browse good first issues</a>
+      </div>
+      <p style="margin-top:1.2rem; font-size:.92rem; color:var(--muted)">
+        Everyone taking part is expected to follow the
+        <a href="https://github.com/iampopye/recapito/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>.
+        Found a security problem? Report it privately through GitHub security advisories rather
+        than in a public issue.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<div class="stripe" role="presentation"></div>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h2>Recapito</h2>
+        <p>
+          A self-hosted unified inbox for the IMAP mailboxes you already have. Free software under
+          the <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public
+          License v3.0</a> — source, issues and releases live on
+          <a href="https://github.com/iampopye/recapito">github.com/iampopye/recapito</a>.
+        </p>
+        <p style="font-size:.88rem">
+          <a href="https://github.com/iampopye/recapito/blob/main/README.md">README</a> ·
+          <a href="https://github.com/iampopye/recapito/blob/main/SECURITY.md">Security policy</a> ·
+          <a href="https://github.com/iampopye/recapito/blob/main/DEPLOYMENT.md">Deployment guide</a> ·
+          <a href="https://github.com/iampopye/recapito/blob/main/LICENSE">Licence text</a>
+        </p>
+      </div>
+      <div>
+        <h2>Maintainer</h2>
+        <p>
+          Built and maintained in the open by <strong>Karan Garg</strong> — a community
+          professional and open source maintainer working across DevOps and multi-cloud
+          infrastructure, DevSecOps and compliance, data engineering, and AI/ML engineering.
+          Recapito is contributed to the community as a practitioner's tool.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://github.com/iampopye" aria-label="Karan Garg on GitHub">
+              <svg width="19" height="19" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://x.com/mrtechgarg" aria-label="Karan Garg on X, formerly Twitter">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.65l-5.21-6.81-5.96 6.81H1.68l7.73-8.84L1.25 2.25h6.82l4.71 6.23zm-1.16 17.52h1.83L7.02 4.13H5.06z"></path></svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/karan-garg-tech/" aria-label="Karan Garg on LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4v10.75H3zM10 9.75h3.83v1.47h.05a4.2 4.2 0 0 1 3.78-2.08c4.04 0 4.79 2.66 4.79 6.12v5.24h-4v-4.65c0-1.11-.02-2.54-1.55-2.54-1.55 0-1.79 1.21-1.79 2.46v4.73h-4z"></path></svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Copyright &copy; 2026 Karan Garg. Licensed under AGPL-3.0.</p>
+      <p>Recapito is early software. Read the security policy before exposing an instance to the internet.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---- theme toggle ---------------------------------------------------- */
+  var root = document.documentElement;
+  var toggle = document.getElementById('theme-toggle');
+
+  function systemPrefersDark() {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function currentTheme() {
+    var attr = root.getAttribute('data-theme');
+    if (attr === 'light' || attr === 'dark') return attr;
+    return systemPrefersDark() ? 'dark' : 'light';
+  }
+  function syncLabel() {
+    var next = currentTheme() === 'dark' ? 'light' : 'dark';
+    toggle.setAttribute('aria-label', 'Switch to ' + next + ' theme');
+  }
+
+  if (toggle) {
+    syncLabel();
+    toggle.addEventListener('click', function () {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('recapito-theme', next); } catch (e) { /* ignore */ }
+      syncLabel();
+    });
+  }
+
+  if (window.matchMedia) {
+    var mq = window.matchMedia('(prefers-color-scheme: dark)');
+    var onChange = function () { if (!root.getAttribute('data-theme')) syncLabel(); };
+    if (mq.addEventListener) { mq.addEventListener('change', onChange); }
+    else if (mq.addListener) { mq.addListener(onChange); }
+  }
+
+  /* ---- copy to clipboard ----------------------------------------------- */
+  var status = document.getElementById('copy-status');
+
+  function announce(msg) { if (status) { status.textContent = msg; } }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.copy-btn'), function (btn) {
+    btn.addEventListener('click', function () {
+      var target = document.getElementById(btn.getAttribute('data-copy'));
+      if (!target) return;
+      var text = target.textContent.replace(/ /g, ' ');
+      var original = btn.textContent;
+
+      var done = function (ok) {
+        btn.textContent = ok ? 'Copied' : 'Press Ctrl+C';
+        announce(ok ? 'Command copied to clipboard' : 'Copy failed — select the text and copy manually');
+        window.setTimeout(function () { btn.textContent = original; }, 2000);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(fallbackCopy(text)); });
+      } else {
+        done(fallbackCopy(text));
+      }
+    });
+  });
+})();
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["SoftwareApplication", "SoftwareSourceCode"],
+      "@id": "https://iampopye.github.io/recapito/#software",
+      "name": "Recapito",
+      "alternateName": "Recapito unified inbox",
+      "description": "Recapito is a self-hosted unified inbox. Sync any number of IMAP mailboxes into one threaded interface, search them all at once, and send via your own provider.",
+      "url": "https://iampopye.github.io/recapito/",
+      "codeRepository": "https://github.com/iampopye/recapito",
+      "applicationCategory": "CommunicationApplication",
+      "applicationSubCategory": "Email client",
+      "operatingSystem": "Linux, macOS, Windows — runs as a Docker Compose stack",
+      "runtimePlatform": "Node.js 20, Docker, PostgreSQL 16",
+      "programmingLanguage": "TypeScript",
+      "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+      "isAccessibleForFree": true,
+      "image": "https://iampopye.github.io/recapito/og.png",
+      "featureList": [
+        "Unified inbox across multiple IMAP mailboxes",
+        "Threaded conversations",
+        "Folders: Inbox, Sent, Drafts, Spam, Trash, Archive",
+        "Cross-mailbox search served from PostgreSQL",
+        "Real-time inbound sync over IMAP IDLE",
+        "Labels",
+        "Drafts with autosave",
+        "Scheduled send",
+        "Email signatures",
+        "Reply templates",
+        "Bulk thread actions",
+        "Contacts address book",
+        "Multi-user with an admin role",
+        "Attachment extraction, storage and download",
+        "Outbound sending through Mailgun, Brevo or SMTP"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@id": "https://github.com/iampopye#person"
+      },
+      "maintainer": {
+        "@id": "https://github.com/iampopye#person"
+      }
+    },
+    {
+      "@type": "Person",
+      "@id": "https://github.com/iampopye#person",
+      "name": "Karan Garg",
+      "url": "https://github.com/iampopye",
+      "jobTitle": "Open source maintainer",
+      "description": "Community professional and open source maintainer working across DevOps and multi-cloud infrastructure, DevSecOps and compliance, data engineering, and AI/ML engineering.",
+      "sameAs": [
+        "https://github.com/iampopye",
+        "https://x.com/mrtechgarg",
+        "https://www.linkedin.com/in/karan-garg-tech/"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://iampopye.github.io/recapito/#website",
+      "url": "https://iampopye.github.io/recapito/",
+      "name": "Recapito",
+      "inLanguage": "en",
+      "about": { "@id": "https://iampopye.github.io/recapito/#software" },
+      "publisher": { "@id": "https://github.com/iampopye#person" }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://iampopye.github.io/recapito/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Recapito a mail server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Recapito does not listen on port 25, does not receive SMTP, and cannot be the MX host for your domain. It syncs IMAP mailboxes you already have with providers such as Gmail, Fastmail or Zoho, and sends through Mailgun, Brevo or your own SMTP host. If you want to host mail, you want a mail server such as Postfix, Dovecot, Mailcow or Mail-in-a-Box; Recapito sits on top of one."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I have to use Mailgun?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Mailgun, Brevo's transactional API and any plain SMTP host are all supported, and they are configured per user in the interface rather than baked into the deployment. You can register several providers, mark one as the default, and assign a specific provider to a specific mailbox. Receiving mail needs no provider at all — only IMAP access to your existing accounts."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Where is my mail actually stored?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Your IMAP provider remains the authoritative store. Recapito mirrors messages into PostgreSQL as they arrive so that cross-mailbox search, threading and bulk actions run against local data instead of querying every mail host live. Dropping the Recapito database does not delete your mail — it re-syncs. Message bodies in that mirror are stored unencrypted, because encrypting them would break server-side search; disk or database-level encryption is the lever for that."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it work with Gmail?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Only with an app password today. Mailboxes authenticate with a stored username and password, and Google turned off plain password sign-in for IMAP in 2024, so a Gmail account needs an app password — and a Workspace administrator can disable those. OAuth2 / XOAUTH2 support is the top item on the roadmap for exactly this reason. Any IMAP host that accepts a username and password works now."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it ready for production?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Be careful. This is an early project maintained by one person, and it has not been battle-tested at scale. The security fundamentals are deliberate — credentials encrypted with AES-256-GCM, mandatory secrets with no fallback, registration closed by default — but there is no built-in rate limiting on the authentication endpoints, no audit log, and most of the codebase has no test coverage. Read SECURITY.md and work through the deployment hardening checklist before you put it on the internet."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does the licence let me do?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Recapito is licensed under the GNU Affero General Public License v3.0. You can use it for anything, including commercially, at no cost, and you can read, modify and redistribute the source. The catch is the network clause: if you modify Recapito and let other people use your modified version over a network, you must offer those users the source of your changes under the same licence. Running an unmodified copy, or modifying it purely for your own use, obliges you to publish nothing."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+</body>
+</html>

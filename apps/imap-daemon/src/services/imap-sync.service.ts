@@ -2,6 +2,7 @@ import { DataSource, Repository } from 'typeorm';
 import { ImapFlow, FetchMessageObject } from 'imapflow';
 import { simpleParser, ParsedMail, AddressObject } from 'mailparser';
 import { storeAttachments } from './attachment-store';
+import { normalizeSubject, isMeaningfulSubject } from './subject';
 import { Mailbox } from '../entities/mailbox.entity';
 import { Thread, ThreadFolder } from '../entities/thread.entity';
 import { Message } from '../entities/message.entity';
@@ -305,7 +306,13 @@ export class ImapSyncService {
     const participants = [fromAddress, ...toAddresses, ...ccAddresses].filter(
       (v, i, a) => a.indexOf(v) === i,
     );
-    const thread = await this.findOrCreateThread(mailboxId, subject, participants, folder);
+    const thread = await this.findOrCreateThread(
+      mailboxId,
+      subject,
+      participants,
+      folder,
+      parsed.inReplyTo || null,
+    );
 
     // Create message
     const message = this.messageRepository.create({
@@ -370,32 +377,48 @@ export class ImapSyncService {
     subject: string,
     participants: string[],
     folder: ThreadFolder,
+    inReplyTo?: string | null,
   ): Promise<Thread> {
-    const normalizedSubject = this.normalizeSubject(subject);
-
-    let thread = await this.threadRepository.findOne({
-      where: { mailboxId, subject: normalizedSubject },
-    });
-
-    if (!thread) {
-      thread = this.threadRepository.create({
-        mailboxId,
-        subject: normalizedSubject,
-        participants,
-        lastMessageAt: new Date(),
-        messageCount: 0,
-        folder,
+    // 1. In-Reply-To is the RFC-defined header for this and is authoritative:
+    //    it names the parent message directly, whatever the subject says.
+    if (inReplyTo) {
+      const parent = await this.messageRepository.findOne({
+        where: { messageId: inReplyTo, mailboxId },
+        select: ['id', 'threadId'],
       });
-      thread = await this.threadRepository.save(thread);
+      if (parent?.threadId) {
+        const parentThread = await this.threadRepository.findOne({
+          where: { id: parent.threadId },
+        });
+        if (parentThread) {
+          return parentThread;
+        }
+      }
     }
 
-    return thread;
+    const normalizedSubject = normalizeSubject(subject);
+
+    // 2. Subject fallback, only when the subject actually identifies something.
+    //    Matching on an empty or "(No subject)" subject collapsed every
+    //    unrelated subject-less email into a single thread.
+    if (isMeaningfulSubject(normalizedSubject)) {
+      const existing = await this.threadRepository.findOne({
+        where: { mailboxId, subject: normalizedSubject },
+      });
+      if (existing) {
+        return existing;
+      }
+    }
+
+    const thread = this.threadRepository.create({
+      mailboxId,
+      subject: normalizedSubject || '(No subject)',
+      participants,
+      lastMessageAt: new Date(),
+      messageCount: 0,
+      folder,
+    });
+    return this.threadRepository.save(thread);
   }
 
-  private normalizeSubject(subject: string): string {
-    return subject
-      .replace(/^(re:|fwd:|fw:)\s*/gi, '')
-      .replace(/^(re:|fwd:|fw:)\s*/gi, '')
-      .trim();
-  }
 }
