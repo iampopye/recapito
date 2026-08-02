@@ -360,6 +360,7 @@ section + section { border-top: 1px solid var(--border); }
   border-radius: var(--radius); padding: 1.1rem 1.2rem;
   border-top: 3px solid var(--primary);
 }
+.sec-list li.wide { grid-column: 1 / -1; }
 .sec-list h3 { margin-bottom: .3rem; }
 .sec-list p { margin: 0; font-size: .92rem; color: var(--muted); }
 
@@ -685,7 +686,7 @@ details.src .codeblock { margin-top: .7rem; }
         <article class="card">
           <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h13M10 18h10"></path><circle cx="4.5" cy="12" r="1.3" fill="currentColor" stroke="none"></circle><circle cx="7.5" cy="18" r="1.3" fill="currentColor" stroke="none"></circle></svg></span>
           <h3>Threaded conversations</h3>
-          <p>Replies group into threads across mailboxes, with de-duplication on the RFC message ID so nothing is stored twice.</p>
+          <p>Replies group by the <code>In-Reply-To</code> header, falling back to a normalised subject only when the subject actually identifies something. Messages are de-duplicated on the RFC message ID, so nothing is stored twice.</p>
         </article>
 
         <article class="card">
@@ -756,8 +757,8 @@ details.src .codeblock { margin-top: .7rem; }
 
         <article class="card">
           <span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5 12 20a5.2 5.2 0 0 1-7.4-7.4l8-8a3.5 3.5 0 0 1 4.9 5l-8 8a1.8 1.8 0 0 1-2.5-2.5l7.4-7.4"></path></svg></span>
-          <h3>Attachments <span class="tag">API only</span></h3>
-          <p>Incoming attachments are extracted during sync and written outside the database, capped at 25&nbsp;MB by default. They are listed and downloaded through the API today; a compose-side interface is on the roadmap.</p>
+          <h3>Attachments <span class="tag">Receiving</span></h3>
+          <p>Incoming attachments are extracted during sync and written outside the database under a random filename, capped at 25&nbsp;MB by default. They are listed on the message and downloaded on demand. Adding attachments to an outgoing reply is on the roadmap.</p>
         </article>
 
         <article class="card">
@@ -829,6 +830,19 @@ details.src .codeblock { margin-top: .7rem; }
             <code>.svg</code> can never execute on the application's origin with your session. The
             on-disk filename is a random UUID; the sender's filename is a database column, sanitised
             back into a header at download time.
+          </p>
+        </li>
+        <li class="wide">
+          <h3>HTML email renders inside a sandboxed iframe</h3>
+          <p>
+            An HTML message body is arbitrary markup written by whoever sent it. Rather than
+            injecting it into the page, Recapito renders it in an iframe with neither
+            <code>allow-scripts</code> nor <code>allow-same-origin</code>, so the browser refuses
+            to run script in it at all and gives it an opaque origin — a browser-enforced boundary
+            rather than a sanitiser that has to keep pace with new bypasses. A
+            <code>Content-Security-Policy</code> inside that frame blocks remote script outright
+            and allows only <code>data:</code> images, which has the pleasant side effect of
+            stopping tracking pixels quietly reporting that you opened the mail.
           </p>
         </li>
       </ul>
@@ -1090,12 +1104,12 @@ docker compose --env-file ../.env up -d</code></pre>
           <p>The interface is English-only, with no translation layer to plug other languages into.</p>
         </li>
         <li>
-          <h3>Attachment interface</h3>
-          <p>The storage layer, the database table and the download API all exist. Viewing attachments on a message and adding them to an outgoing reply do not.</p>
+          <h3>Sending attachments</h3>
+          <p>Attachments on received mail are stored, listed and downloadable. Attaching a file to an outgoing reply is not implemented — compose is text only.</p>
         </li>
         <li>
           <h3>Test coverage</h3>
-          <p>A handful of specs cover encryption and authentication. Most of the codebase has none — the most useful unglamorous contribution available.</p>
+          <p>Five spec files cover encryption, authentication and user management. The frontend and the daemon have none at all — the most useful unglamorous contribution available.</p>
         </li>
       </ul>
     </div>
@@ -1358,6 +1372,7 @@ docker compose --env-file ../.env up -d</code></pre>
         "Contacts address book",
         "Multi-user with an admin role",
         "Attachment extraction, storage and download",
+        "HTML email bodies rendered in a sandboxed iframe",
         "Outbound sending through Mailgun, Brevo or SMTP"
       ],
       "offers": {

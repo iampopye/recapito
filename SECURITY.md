@@ -126,7 +126,7 @@ Being explicit about the gaps:
 - **The IMAP daemon connects to your mail providers directly.** TLS to those providers depends on their configuration and the port you set on the mailbox.
 - **There is no built-in rate limiting** on authentication endpoints. If you expose Recapito to the internet, put rate limiting in your reverse proxy.
 - **There is no audit log** of who read or sent what.
-- **Registration is open by default.** Anyone who can reach the registration page can create an account. Restrict access at the network or proxy layer if the instance is internet-facing and not meant to be public.
+- **Registration is closed by default.** `ALLOW_REGISTRATION` defaults to `false`. The very first account created is always permitted — otherwise a fresh deployment could never be bootstrapped — and that account becomes the administrator. Every subsequent sign-up is rejected unless you explicitly set `ALLOW_REGISTRATION=true`. If you do open it on an internet-facing instance, restrict access at the network or proxy layer as well.
 
 ## Deployment hardening checklist
 
