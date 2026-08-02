@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Lockfiles (managed by the package manager)
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Generated / vendored
+apps/frontend/next-env.d.ts
+apps/frontend/public/
+# TypeORM-generated migrations: reformatting produces noisy, meaningless diffs
+apps/backend/src/migrations/
+
+# Data & infra artefacts that must stay byte-exact
+database-schema.sql
+docker/nginx/ssl/
+docker/nginx/certbot/
+
+# Env files
+.env
+.env.*

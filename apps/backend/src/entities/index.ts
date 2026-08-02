@@ -1,0 +1,12 @@
+export { User } from './user.entity';
+export { Mailbox } from './mailbox.entity';
+export { Thread, ThreadFolder, ThreadPriority } from './thread.entity';
+export { Message } from './message.entity';
+export { OutboundLog } from './outbound-log.entity';
+export { SmtpProvider, SmtpProviderType } from './smtp-provider.entity';
+export { Label } from './label.entity';
+export { Draft } from './draft.entity';
+export { Attachment } from './attachment.entity';
+export { Signature } from './signature.entity';
+export { Contact } from './contact.entity';
+export { Template } from './template.entity';

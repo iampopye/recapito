@@ -1,0 +1,43 @@
+# Build stage
+FROM node:20-alpine AS builder
+
+RUN npm install -g typescript
+
+WORKDIR /app
+
+# Copy shared package source and build
+COPY packages/shared /app/packages/shared
+WORKDIR /app/packages/shared
+RUN npm install && tsc
+
+# Copy frontend
+WORKDIR /app/apps/frontend
+COPY apps/frontend /app/apps/frontend
+
+# Replace workspace protocol with file path for npm
+RUN sed -i 's/"workspace:\*"/"file:..\/..\/packages\/shared"/' package.json
+
+RUN npm install
+
+ARG NEXT_PUBLIC_API_URL=http://localhost:3001
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Copy necessary files
+COPY --from=builder /app/apps/frontend/.next/standalone ./
+COPY --from=builder /app/apps/frontend/.next/static ./.next/static
+COPY --from=builder /app/apps/frontend/public ./public
+
+EXPOSE 3000
+
+ENV PORT=3000
+
+CMD ["node", "server.js"]

@@ -1,0 +1,79 @@
+version: 2
+
+updates:
+  # ---------------------------------------------------------------------------
+  # GitHub Actions.
+  #
+  # Every third-party action in this repo is pinned to a full commit SHA, which
+  # Dependabot understands: it bumps the SHA and rewrites the trailing version
+  # comment, so pinning costs nothing in maintenance.
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
+
+  # ---------------------------------------------------------------------------
+  # npm / pnpm workspaces.
+  #
+  # `directories` (plural, with globs) covers the workspace roots so Dependabot
+  # sees every package.json rather than only the one at the repo root.
+  # Majors are deliberately left ungrouped: a React or NestJS major deserves
+  # its own PR and its own review, not a batch merge.
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /apps/*
+      - /packages/*
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 10
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: "deps"
+      prefix-development: "deps-dev"
+    labels:
+      - dependencies
+    groups:
+      # One PR a week for the safe stuff.
+      production-minor-patch:
+        dependency-type: production
+        update-types:
+          - minor
+          - patch
+      development-minor-patch:
+        dependency-type: development
+        update-types:
+          - minor
+          - patch
+    ignore:
+      # These majors are pinned to the framework generation this app targets;
+      # bumping them is a migration, not a dependency update.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@nestjs/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typeorm"
+        update-types: ["version-update:semver-major"]
