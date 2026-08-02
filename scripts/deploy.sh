@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Rio Mailer Deployment Script
+# Recapito Deployment Script
 # Usage: ./scripts/deploy.sh [staging|production]
 
 ENVIRONMENT=${1:-production}
@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
 echo "=========================================="
-echo "Rio Mailer Deployment - $ENVIRONMENT"
+echo "Recapito Deployment - $ENVIRONMENT"
 echo "=========================================="
 
 # Check for required files

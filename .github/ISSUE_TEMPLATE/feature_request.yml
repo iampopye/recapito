@@ -1,0 +1,106 @@
+name: Feature request
+description: Suggest something Recapito should be able to do
+title: "[Feature]: "
+labels: ["enhancement", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion.
+
+        The most useful thing you can tell us is **the problem you have**, not only the
+        solution you pictured. The problem is what gets designed against; there may be a
+        simpler answer than the one you had in mind.
+
+        Worth a look first: the [Roadmap](https://github.com/iampopye/recapito#roadmap)
+        lists what is already planned but not yet built. If your idea is on it, a comment
+        on the existing issue saying you want it — or that you would like to build it —
+        is more useful than a new issue.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched existing issues and this has not been requested already.
+          required: true
+        - label: This is not already listed on the Roadmap.
+          required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: >-
+        Describe the situation you are in and why the current behaviour does not work
+        for you. Concrete beats abstract.
+      placeholder: >-
+        I run three support addresses through Recapito. When a colleague has already
+        replied to a thread I cannot tell, so we sometimes both answer the same customer.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like Recapito to do?
+      description: Your proposed solution, as specifically as you can describe it.
+      placeholder: >-
+        Show an indicator on a thread in the list when another user has it open, or has
+        replied to it since the last inbound message.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you have considered
+      description: >-
+        Other ways of solving the same problem, including workarounds you use today, and
+        why they fall short.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which part of Recapito would this touch?
+      description: Best guess is fine.
+      multiple: true
+      options:
+        - Frontend (Next.js web client)
+        - Backend API (NestJS)
+        - IMAP daemon (mail sync)
+        - Outbound sending (Mailgun / Brevo / SMTP)
+        - Database schema
+        - Docker / deployment
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Would you like to build it?
+      description: >-
+        No pressure either way — suggesting something without implementing it is a
+        completely valid contribution. If you do want to try, saying so early means a
+        maintainer can help you scope it before you write code.
+      options:
+        - "Yes, I would like to work on this"
+        - "Maybe, with some guidance on where to start"
+        - "No, just suggesting it"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Anything else
+      description: >-
+        Mockups, links to how other mail clients handle it, or relevant details about
+        your setup. If you attach a screenshot of your own inbox, redact the addresses,
+        subjects and message content first.
+    validations:
+      required: false

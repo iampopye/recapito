@@ -221,9 +221,21 @@ export class MailgunService {
   async handleWebhook(payload: Record<string, unknown>): Promise<void> {
     const settings = await this.getSettings();
 
-    // Verify webhook signature
+    // This endpoint is unauthenticated by design -- Mailgun calls it -- so the
+    // signature IS the authentication. It must be mandatory.
+    //
+    // The previous form was `if (signature && !verify(...)) throw`, which
+    // skipped verification entirely whenever the `signature` field was absent.
+    // Omitting one key was enough to forge any delivery or bounce event for
+    // any message. Fail closed instead.
+    if (!settings.webhookSigningKey) {
+      throw new BadRequestException(
+        'Webhook signing key is not configured; refusing to accept unverified webhook events',
+      );
+    }
+
     const signature = payload['signature'] as Record<string, string> | undefined;
-    if (signature && !this.verifyWebhookSignature(settings, signature)) {
+    if (!signature || !this.verifyWebhookSignature(settings, signature)) {
       throw new BadRequestException('Invalid webhook signature');
     }
 
@@ -290,17 +302,42 @@ export class MailgunService {
     settings: MailgunSettings,
     signature: Record<string, string>,
   ): boolean {
+    // No "return true when unconfigured" escape hatch -- the caller already
+    // rejects that case. A verifier that can return true without checking
+    // anything is not a verifier.
     if (!settings.webhookSigningKey) {
-      return true; // Skip verification if no key configured
+      return false;
     }
 
     const { timestamp, token, signature: sig } = signature;
-    const encodedToken = crypto
+    if (!timestamp || !token || !sig) {
+      return false;
+    }
+
+    // Reject stale signatures so a captured webhook cannot be replayed forever.
+    const age = Math.abs(Date.now() / 1000 - Number(timestamp));
+    if (!Number.isFinite(age) || age > 300) {
+      return false;
+    }
+
+    const expected = crypto
       .createHmac('sha256', settings.webhookSigningKey)
       .update(timestamp + token)
-      .digest('hex');
+      .digest();
 
-    return encodedToken === sig;
+    let provided: Buffer;
+    try {
+      provided = Buffer.from(sig, 'hex');
+    } catch {
+      return false;
+    }
+
+    // timingSafeEqual throws on length mismatch, and `===` on secrets leaks
+    // information through comparison time.
+    if (provided.length !== expected.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(expected, provided);
   }
 
   // Test method to send a simple email
@@ -314,9 +351,9 @@ export class MailgunService {
     const formData = new URLSearchParams();
     formData.append('from', `${settings.fromName} <${settings.fromEmail}>`);
     formData.append('to', to);
-    formData.append('subject', 'Test Email from Rio Mailer');
-    formData.append('text', 'This is a test email sent from Rio Mailer to verify your Mailgun configuration.');
-    formData.append('html', '<h1>Test Email</h1><p>This is a test email sent from <strong>Rio Mailer</strong> to verify your Mailgun configuration.</p>');
+    formData.append('subject', 'Test Email from Recapito');
+    formData.append('text', 'This is a test email sent from Recapito to verify your Mailgun configuration.');
+    formData.append('html', '<h1>Test Email</h1><p>This is a test email sent from <strong>Recapito</strong> to verify your Mailgun configuration.</p>');
 
     const url = `${settings.baseUrl}/v3/${settings.domain}/messages`;
     const auth = Buffer.from(`api:${settings.apiKey}`).toString('base64');

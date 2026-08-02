@@ -1,6 +1,7 @@
 import { DataSource, Repository } from 'typeorm';
 import { ImapFlow, FetchMessageObject } from 'imapflow';
 import { simpleParser, ParsedMail, AddressObject } from 'mailparser';
+import { storeAttachments } from './attachment-store';
 import { Mailbox } from '../entities/mailbox.entity';
 import { Thread, ThreadFolder } from '../entities/thread.entity';
 import { Message } from '../entities/message.entity';
@@ -272,9 +273,14 @@ export class ImapSyncService {
 
     const messageId = parsed.messageId || `<generated-${Date.now()}-${msg.uid}@local>`;
 
-    // Check if already exists
+    // Check if already exists IN THIS MAILBOX.
+    //
+    // Scoping to mailboxId is essential in a unified inbox: an email addressed
+    // to both support@ and sales@ carries one RFC Message-ID but legitimately
+    // exists in two mailboxes. A global uniqueness check stored it once and
+    // made it silently invisible in whichever mailbox synced second.
     const existing = await this.messageRepository.findOne({
-      where: { messageId },
+      where: { messageId, mailboxId },
     });
     if (existing) {
       return false;
@@ -319,6 +325,16 @@ export class ImapSyncService {
     });
 
     await this.messageRepository.save(message);
+
+    // Persist attachments. `simpleParser` has already decoded them into
+    // `parsed.attachments`; until this call existed the daemon read the body
+    // and dropped every attached file on the floor.
+    if (parsed.attachments?.length) {
+      const stored = await storeAttachments(this.dataSource, message.id, parsed.attachments);
+      if (stored > 0) {
+        console.log(`Stored ${stored} attachment(s) for message ${messageId}`);
+      }
+    }
 
     // Update thread - use GREATEST to only update timestamp if new message is newer
     // This ensures new emails always appear on top (Gmail standard behavior)

@@ -6,7 +6,7 @@ import { AuthProvider } from '@/lib/auth-context';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Rio Mailer',
+  title: 'Recapito',
   description: 'Unified inbox for sales teams',
 };
 

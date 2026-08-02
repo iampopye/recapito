@@ -33,7 +33,7 @@ import type {
   ITemplate,
   ICreateTemplateRequest,
   IUpdateTemplateRequest,
-} from '@rio/shared';
+} from '@recapito/shared';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 

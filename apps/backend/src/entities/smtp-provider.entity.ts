@@ -9,6 +9,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { encryptedColumn } from '../common/crypto/encrypted-column.transformer';
 
 export type SmtpProviderType = 'mailgun' | 'brevo' | 'smtp';
 
@@ -37,8 +38,16 @@ export class SmtpProvider {
   @Column({ name: 'from_name', type: 'varchar', nullable: true })
   fromName: string | null;
 
-  // Mailgun-specific settings
-  @Column({ name: 'mailgun_api_key', type: 'varchar', nullable: true })
+  // Mailgun-specific settings.
+  // API keys are encrypted at rest -- a Mailgun private key can send mail as
+  // the domain and read delivery logs, so it is as sensitive as a password.
+  @Column({
+    name: 'mailgun_api_key',
+    type: 'varchar',
+    length: 1024,
+    nullable: true,
+    transformer: encryptedColumn,
+  })
   mailgunApiKey: string | null;
 
   @Column({ name: 'mailgun_domain', type: 'varchar', nullable: true })
@@ -48,7 +57,13 @@ export class SmtpProvider {
   mailgunBaseUrl: string | null;
 
   // Brevo-specific settings
-  @Column({ name: 'brevo_api_key', type: 'varchar', nullable: true })
+  @Column({
+    name: 'brevo_api_key',
+    type: 'varchar',
+    length: 1024,
+    nullable: true,
+    transformer: encryptedColumn,
+  })
   brevoApiKey: string | null;
 
   // Custom SMTP settings
@@ -64,7 +79,13 @@ export class SmtpProvider {
   @Column({ name: 'smtp_username', type: 'varchar', nullable: true })
   smtpUsername: string | null;
 
-  @Column({ name: 'smtp_password', type: 'varchar', nullable: true })
+  @Column({
+    name: 'smtp_password',
+    type: 'varchar',
+    length: 1024,
+    nullable: true,
+    transformer: encryptedColumn,
+  })
   smtpPassword: string | null;
 
   @Column({ name: 'is_active', default: true })

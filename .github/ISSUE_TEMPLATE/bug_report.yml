@@ -1,0 +1,150 @@
+name: Bug report
+description: Something in Recapito does not work the way it should
+title: "[Bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this.
+
+        **Before you paste anything:** Recapito is a mail application. Logs, screenshots
+        and API responses routinely contain real email addresses, subject lines, message
+        bodies, IMAP passwords and session tokens. Please redact all of it — this issue
+        will be public and permanently indexed.
+
+        Found a **security vulnerability**? Do not file it here. Report it privately at
+        https://github.com/iampopye/recapito/security/advisories/new
+
+  - type: checkboxes
+    id: redaction
+    attributes:
+      label: Redaction confirmation
+      description: This is required. Please check it only after you have actually looked.
+      options:
+        - label: >-
+            I have removed all credentials (IMAP/SMTP passwords, API keys, JWTs,
+            database passwords), all email addresses, and all message subjects and
+            bodies from every log, screenshot, and code block in this report.
+          required: true
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Before filing
+      options:
+        - label: I searched existing issues and did not find this one already reported.
+          required: true
+        - label: >-
+            I checked the [Roadmap](https://github.com/iampopye/recapito#roadmap) and
+            this is not a feature that simply is not built yet.
+          required: false
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Describe the bug. What did you expect, and what did you get instead?
+      placeholder: |
+        I expected new mail in my Fastmail account to appear in the unified inbox
+        within a minute. Nothing arrives, but the daemon logs show it connecting
+        successfully.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps someone else could follow to see the same thing.
+      placeholder: |
+        1. Add a mailbox under Mailboxes with host `imap.example.com`, port 993, SSL on
+        2. Wait for the daemon to log "IDLE started"
+        3. Send a message to that address from elsewhere
+        4. Refresh the inbox — the message never appears
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Which part of Recapito?
+      description: Best guess is fine. Pick "Not sure" if you do not know.
+      multiple: true
+      options:
+        - Frontend (Next.js web client)
+        - Backend API (NestJS)
+        - IMAP daemon (mail sync)
+        - Database / migrations
+        - Docker / deployment
+        - Documentation
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The release tag you are running, or the output of `git rev-parse --short HEAD`.
+      placeholder: "v0.1.0, or 9eacc85"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: How are you running it?
+      options:
+        - Docker Compose (docker-compose.yml)
+        - Docker Compose production (docker-compose.prod.yml, with nginx)
+        - Local development (pnpm dev:*)
+        - Other / custom
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, and Node/pnpm versions if you are running it locally.
+      placeholder: "Ubuntu 22.04, Docker 27.1, Node 20.11, pnpm 8.15"
+    validations:
+      required: true
+
+  - type: input
+    id: imap-provider
+    attributes:
+      label: IMAP provider
+      description: >-
+        Only if the bug involves mail sync. Name the provider, not your address —
+        "Gmail", "Fastmail", "Zoho", "self-hosted Dovecot". IMAP behaviour varies a
+        lot between providers and this is often the deciding clue.
+      placeholder: "Gmail"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: >-
+        Output from `docker compose logs backend` or `logs imap-daemon`, or the
+        browser console. **Redact before pasting** — see the checkbox above. Replace
+        real addresses with `user@example.com` and subjects with `[redacted]`.
+      render: shell
+      placeholder: |
+        [imap-daemon] IDLE started for user@example.com/INBOX
+        [imap-daemon] Error: ...
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Anything else
+      description: >-
+        Screenshots (redacted), things you already tried, when it started happening,
+        or anything that seems related.
+    validations:
+      required: false

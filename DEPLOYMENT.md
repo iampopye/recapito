@@ -1,4 +1,4 @@
-# Rio Mailer - Deployment Guide
+# Recapito - Deployment Guide
 
 ## Prerequisites
 
@@ -20,8 +20,8 @@ sudo usermod -aG docker $USER
 sudo apt install docker-compose-plugin
 
 # Clone repository
-git clone https://github.com/yourusername/rio-mailer.git /opt/rio-mailer
-cd /opt/rio-mailer
+git clone https://github.com/yourusername/recapito.git /opt/recapito
+cd /opt/recapito
 ```
 
 ### 2. Configure Environment
@@ -74,14 +74,14 @@ In your Mailgun dashboard:
 
 ### Deploy Updates
 ```bash
-cd /opt/rio-mailer
+cd /opt/recapito
 git pull
 ./scripts/deploy.sh
 ```
 
 ### View Logs
 ```bash
-cd /opt/rio-mailer/docker
+cd /opt/recapito/docker
 
 # All services
 docker compose -f docker-compose.prod.yml logs -f
@@ -98,18 +98,18 @@ docker compose -f docker-compose.prod.yml logs -f imap-daemon
 
 ### Restore Database
 ```bash
-./scripts/restore-db.sh backups/rio_mailer_TIMESTAMP.dump
+./scripts/restore-db.sh backups/recapito_TIMESTAMP.dump
 ```
 
 ### Restart Services
 ```bash
-cd /opt/rio-mailer/docker
+cd /opt/recapito/docker
 docker compose -f docker-compose.prod.yml restart
 ```
 
 ### Stop Services
 ```bash
-cd /opt/rio-mailer/docker
+cd /opt/recapito/docker
 docker compose -f docker-compose.prod.yml down
 ```
 
@@ -157,7 +157,7 @@ docker compose -f docker-compose.prod.yml logs backend
 docker compose -f docker-compose.prod.yml ps postgres
 
 # Test connection
-docker compose -f docker-compose.prod.yml exec postgres psql -U rio_prod -d rio_mailer_prod -c "SELECT 1"
+docker compose -f docker-compose.prod.yml exec postgres psql -U recapito_prod -d recapito_prod -c "SELECT 1"
 ```
 
 ### IMAP sync not working

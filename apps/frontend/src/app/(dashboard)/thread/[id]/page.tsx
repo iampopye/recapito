@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { MessageList } from '@/components/MessageList';
 import { ReplyBox } from '@/components/ReplyBox';
-import type { IThreadWithMessages, IMailbox } from '@rio/shared';
+import type { IThreadWithMessages, IMailbox } from '@recapito/shared';
 
 export default function ThreadPage() {
   const params = useParams();

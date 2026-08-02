@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import type { IMailgunSettings, ISmtpProvider, SmtpProviderType } from '@rio/shared';
+import type { IMailgunSettings, ISmtpProvider, SmtpProviderType } from '@recapito/shared';
 
 const PROVIDER_TYPES: { value: SmtpProviderType; label: string }[] = [
   { value: 'mailgun', label: 'Mailgun' },

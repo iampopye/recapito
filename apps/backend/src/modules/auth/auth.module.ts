@@ -15,7 +15,12 @@ import { UsersModule } from '../users/users.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET', 'default-secret'),
+        // No fallback. This previously defaulted to the literal string
+        // 'default-secret', so any deployment that forgot to set JWT_SECRET
+        // signed tokens with a value published in this repository -- letting
+        // anyone forge a token for any user. env.validation.ts now refuses to
+        // boot without a real secret; getOrThrow is the belt to that braces.
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: configService.get('JWT_EXPIRES_IN', '7d'),
         },

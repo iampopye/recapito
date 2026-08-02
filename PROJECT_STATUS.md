@@ -1,4 +1,4 @@
-# Rio Mailer — Features & Roadmap
+# Recapito — Features & Roadmap
 
 ## Implemented
 

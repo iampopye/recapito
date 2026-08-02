@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { ThreadList } from '@/components/ThreadList';
 import { MailSidebar } from '@/components/MailSidebar';
 import { SearchBar } from '@/components/SearchBar';
-import type { IThread, IMailbox, IPaginatedResponse, ThreadFolder, IFolderCounts, ILabel } from '@rio/shared';
+import type { IThread, IMailbox, IPaginatedResponse, ThreadFolder, IFolderCounts, ILabel } from '@recapito/shared';
 
 export default function InboxPage() {
   const [threads, setThreads] = useState<IThread[]>([]);

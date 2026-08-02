@@ -1,6 +1,6 @@
 'use client';
 
-import type { IMessage } from '@rio/shared';
+import type { IMessage } from '@recapito/shared';
 
 interface MessageListProps {
   messages: IMessage[];

@@ -1,5 +1,5 @@
 {
-  "name": "rio-mailer",
+  "name": "recapito",
   "version": "1.0.0",
   "private": true,
   "description": "White-label unified inbox platform",
@@ -12,10 +12,31 @@
     "build:imap-daemon": "pnpm --filter imap-daemon build",
     "db:migrate": "pnpm --filter backend migration:run",
     "db:generate": "pnpm --filter backend migration:generate",
-    "lint": "pnpm -r lint",
-    "typecheck": "pnpm -r typecheck"
+    "build:shared": "pnpm --filter @recapito/shared build",
+    "build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend && pnpm run build:imap-daemon",
+    "lint": "pnpm run build:shared && eslint . --max-warnings 120",
+    "lint:fix": "pnpm run build:shared && eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "pnpm run build:shared && pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:watch": "pnpm --filter backend test:watch",
+    "test:cov": "pnpm -r test:cov"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@next/eslint-plugin-next": "^15.5.22",
+    "eslint": "^9",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.9.0",
+    "prettier": "^3.9.6",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.65.0"
   }
 }

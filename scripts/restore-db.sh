@@ -2,7 +2,7 @@
 set -e
 
 # Database Restore Script
-# Usage: ./scripts/restore-db.sh backups/rio_mailer_TIMESTAMP.dump
+# Usage: ./scripts/restore-db.sh backups/recapito_TIMESTAMP.dump
 
 BACKUP_FILE=$1
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -35,7 +35,7 @@ cd "$PROJECT_DIR/docker"
 docker compose -f docker-compose.prod.yml stop backend imap-daemon frontend
 
 echo "Restoring database..."
-cat "$BACKUP_FILE" | docker exec -i rio-postgres pg_restore \
+cat "$BACKUP_FILE" | docker exec -i recapito-postgres pg_restore \
     -U "$DATABASE_USERNAME" \
     -d "$DATABASE_NAME" \
     --clean \

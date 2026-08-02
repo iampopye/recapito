@@ -19,14 +19,14 @@ mkdir -p "$BACKUP_DIR"
 
 echo "Creating database backup..."
 
-docker exec rio-postgres pg_dump \
+docker exec recapito-postgres pg_dump \
     -U "$DATABASE_USERNAME" \
     -d "$DATABASE_NAME" \
     --format=custom \
     --compress=9 \
-    > "$BACKUP_DIR/rio_mailer_$TIMESTAMP.dump"
+    > "$BACKUP_DIR/recapito_$TIMESTAMP.dump"
 
-echo "Backup created: $BACKUP_DIR/rio_mailer_$TIMESTAMP.dump"
+echo "Backup created: $BACKUP_DIR/recapito_$TIMESTAMP.dump"
 
 # Keep only last 7 backups
 cd "$BACKUP_DIR"

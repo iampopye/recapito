@@ -5,6 +5,7 @@ import { ImapSyncService } from './services/imap-sync.service';
 import { Mailbox } from './entities/mailbox.entity';
 import { Thread } from './entities/thread.entity';
 import { Message } from './entities/message.entity';
+import { Attachment } from './entities/attachment.entity';
 
 // Prevent unhandled rejections from crashing the daemon
 process.on('unhandledRejection', (reason, promise) => {
@@ -23,6 +24,23 @@ process.on('uncaughtException', (error) => {
 
 const BACKGROUND_POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes for background folders
 
+/**
+ * Read a required environment variable, or stop the daemon with a message that
+ * names it. Failing at boot is far easier to diagnose than connecting to the
+ * wrong database with a built-in default and syncing nothing.
+ */
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    console.error(
+      `Missing required environment variable ${name}. ` +
+        'Copy .env.example to .env and fill it in before starting the daemon.',
+    );
+    process.exit(1);
+  }
+  return value;
+}
+
 async function main() {
   console.log('Starting IMAP Daemon with IDLE support...');
 
@@ -31,10 +49,12 @@ async function main() {
     type: 'postgres',
     host: process.env.DATABASE_HOST || 'localhost',
     port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-    username: process.env.DATABASE_USERNAME || 'rio',
-    password: process.env.DATABASE_PASSWORD || 'rio_secret',
-    database: process.env.DATABASE_NAME || 'rio_mailer',
-    entities: [Mailbox, Thread, Message],
+    username: requireEnv('DATABASE_USERNAME'),
+    // No fallback: a default database password that ships in the source is a
+    // credential every deployment shares until someone notices.
+    password: requireEnv('DATABASE_PASSWORD'),
+    database: requireEnv('DATABASE_NAME'),
+    entities: [Mailbox, Thread, Message, Attachment],
     synchronize: false,
     logging: process.env.NODE_ENV === 'development',
   });

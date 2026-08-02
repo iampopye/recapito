@@ -45,6 +45,14 @@ export class UsersService {
     return this.userRepository.findOne({ where: { email } });
   }
 
+  /**
+   * Total user count. Used to detect a fresh install: the first account to
+   * register becomes the administrator and closes open registration.
+   */
+  async count(): Promise<number> {
+    return this.userRepository.count();
+  }
+
   async findAll(): Promise<User[]> {
     return this.userRepository.find({
       order: { createdAt: 'DESC' },

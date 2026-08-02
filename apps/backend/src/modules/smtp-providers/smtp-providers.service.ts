@@ -146,7 +146,7 @@ export class SmtpProvidersService {
       await this.sendEmail(provider, {
         from: `${provider.fromName || 'Test'} <${provider.fromEmail}>`,
         to: [testEmail],
-        subject: 'Test Email from Rio Mailer',
+        subject: 'Test Email from Recapito',
         text: `This is a test email sent via ${provider.name} (${provider.type}) to verify your SMTP configuration.`,
         html: `<h1>Test Email</h1><p>This is a test email sent via <strong>${provider.name}</strong> (${provider.type}) to verify your SMTP configuration.</p>`,
       });

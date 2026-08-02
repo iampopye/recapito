@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import type { IUser } from '@rio/shared';
+import type { IUser } from '@recapito/shared';
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();

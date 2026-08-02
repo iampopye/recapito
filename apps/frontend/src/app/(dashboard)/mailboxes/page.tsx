@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import type { IMailbox, ISmtpProvider } from '@rio/shared';
+import type { IMailbox, ISmtpProvider } from '@recapito/shared';
 
 export default function MailboxesPage() {
   const [mailboxes, setMailboxes] = useState<IMailbox[]>([]);

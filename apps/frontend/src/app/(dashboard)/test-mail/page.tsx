@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import type { ISmtpProvider, IMailgunSettings } from '@rio/shared';
+import type { ISmtpProvider, IMailgunSettings } from '@recapito/shared';
 
 interface SendOption {
   id: string;

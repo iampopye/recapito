@@ -12,6 +12,7 @@ import { User } from './user.entity';
 import { Thread } from './thread.entity';
 import { Message } from './message.entity';
 import { SmtpProvider } from './smtp-provider.entity';
+import { encryptedColumn } from '../common/crypto/encrypted-column.transformer';
 
 @Entity('mailboxes')
 export class Mailbox {
@@ -40,7 +41,18 @@ export class Mailbox {
   @Column({ name: 'imap_username', type: 'varchar', length: 255 })
   imapUsername: string;
 
-  @Column({ name: 'imap_password', type: 'varchar', length: 500 })
+  /**
+   * The user's real IMAP account password. Encrypted at rest via the column
+   * transformer -- plaintext in application code, AES-256-GCM ciphertext in
+   * Postgres. Length is generous because ciphertext plus the IV/tag envelope
+   * is substantially longer than the input.
+   */
+  @Column({
+    name: 'imap_password',
+    type: 'varchar',
+    length: 1024,
+    transformer: encryptedColumn,
+  })
   imapPassword: string;
 
   @Column({ name: 'is_active', default: true })
@@ -58,6 +70,15 @@ export class Mailbox {
 
   @Column({ name: 'last_uid', type: 'int', default: 0 })
   lastUid: number;
+
+  /**
+   * The folder's UIDVALIDITY when `lastUid` was recorded. If the server
+   * renumbers the folder this changes, and every stored UID becomes
+   * meaningless -- the daemon detects that and falls back to a date-window
+   * catch-up instead of silently skipping mail.
+   */
+  @Column({ name: 'uid_validity', type: 'varchar', length: 32, nullable: true })
+  uidValidity: string | null;
 
   @OneToMany(() => Thread, (thread) => thread.mailbox)
   threads: Thread[];

@@ -1,0 +1,26 @@
+# Blank issues stay enabled on purpose. Questions, "I got stuck at step 3", and
+# anything that does not fit a template are welcome — see CONTRIBUTING.md.
+blank_issues_enabled: true
+
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/iampopye/recapito/security/advisories/new
+    about: >-
+      Do not open a public issue for a security problem. Report it privately here
+      and it stays visible only to you and the maintainers. See SECURITY.md.
+
+  - name: Setup and configuration help
+    url: https://github.com/iampopye/recapito#readme
+    about: >-
+      Installation, environment variables, the Docker Compose stack, and the
+      difference between Recapito and a mail server are all covered in the README.
+
+  - name: Contributing guide
+    url: https://github.com/iampopye/recapito/blob/main/CONTRIBUTING.md
+    about: >-
+      Development environment setup, project layout, where to add a feature, and
+      what a good pull request looks like. First-time contributors welcome.
+
+  - name: Code of Conduct
+    url: https://github.com/iampopye/recapito/blob/main/CODE_OF_CONDUCT.md
+    about: The standards everyone taking part in this project is expected to meet.

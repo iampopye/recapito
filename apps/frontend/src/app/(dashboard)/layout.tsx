@@ -38,7 +38,7 @@ export default function DashboardLayout({
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <Link href="/inbox" className="text-xl font-bold text-primary-600">
-                Rio Mailer
+                Recapito
               </Link>
               <div className="ml-10 flex items-center space-x-4">
                 <Link
