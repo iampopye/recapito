@@ -12,8 +12,8 @@ importers:
         specifier: ^9.39.5
         version: 9.39.5
       '@next/eslint-plugin-next':
-        specifier: ^15.5.22
-        version: 15.5.22
+        specifier: ^16.3.0
+        version: 16.3.0(eslint@9.39.5(jiti@1.21.7))
       eslint:
         specifier: ^9
         version: 9.39.5(jiti@1.21.7)
@@ -720,6 +720,12 @@ packages:
     peerDependencies:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
 
+  '@eslint-community/eslint-utils@4.9.1':
+    resolution: {integrity: sha512-phrYmNiYppR7znFEdqgfWHXR6NCkZEK7hwWDHZUjit/2/U0r6XvkDl0SYnoM51Hq7FhCGdLDT6zxCCOY1hexsQ==}
+    engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    peerDependencies:
+      eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
+
   '@eslint-community/regexpp@4.12.2':
     resolution: {integrity: sha512-EriSTlt5OC9/7SXkRSCAhfSxxoSUgBm33OH+IkwbdpgoqsSsUg7y3uh+IICI/Qg4BBWr3U2i39RpmycbxMq4ew==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
@@ -1002,8 +1008,8 @@ packages:
   '@next/env@14.1.0':
     resolution: {integrity: sha512-Py8zIo+02ht82brwwhTg36iogzFqGLPXlRGKQw5s+qP/kMNc4MAyDeEwBKDijk6zTIbegEgu8Qy7C1LboslQAw==}
 
-  '@next/eslint-plugin-next@15.5.22':
-    resolution: {integrity: sha512-SB8PGBmpAiVmOtMOIfObnI2VA3MN3jUGg0iYTh4MO2efxQIV/IL0U8iYOok/8DldCEKARyCOJJix+Vvgzaic/Q==}
+  '@next/eslint-plugin-next@16.3.0':
+    resolution: {integrity: sha512-OqgJ8PN0d04KcPhDX/PTY5tJUJZxlbrt7O7FBsm4XE0XW2JDrKnDXsc9uo9WUimJGPoo2j+JRGhyXApC//mvbw==}
 
   '@next/swc-darwin-arm64@14.1.0':
     resolution: {integrity: sha512-nUDn7TOGcIeyQni6lZHfzNoo9S0euXnu0jhsbMOmMJUBfgsnESdjN97kM7cBqQxZa8L/bM9om/S5/1dzCrW6wQ==}
@@ -5311,6 +5317,11 @@ snapshots:
       eslint: 9.39.5(jiti@1.21.7)
       eslint-visitor-keys: 3.4.3
 
+  '@eslint-community/eslint-utils@4.9.1(eslint@9.39.5(jiti@1.21.7))':
+    dependencies:
+      eslint: 9.39.5(jiti@1.21.7)
+      eslint-visitor-keys: 3.4.3
+
   '@eslint-community/regexpp@4.12.2': {}
 
   '@eslint/config-array@0.21.2':
@@ -5737,9 +5748,12 @@ snapshots:
 
   '@next/env@14.1.0': {}
 
-  '@next/eslint-plugin-next@15.5.22':
+  '@next/eslint-plugin-next@16.3.0(eslint@9.39.5(jiti@1.21.7))':
     dependencies:
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.5(jiti@1.21.7))
       fast-glob: 3.3.1
+    transitivePeerDependencies:
+      - eslint
 
   '@next/swc-darwin-arm64@14.1.0':
     optional: true
