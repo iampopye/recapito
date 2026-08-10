@@ -87,8 +87,8 @@ importers:
         specifier: ^8.0.0
         version: 8.3.0
       nodemailer:
-        specifier: ^6.9.8
-        version: 6.10.1
+        specifier: ^9.0.4
+        version: 9.0.4
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -3421,16 +3421,16 @@ packages:
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
 
-  nodemailer@6.10.1:
-    resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
-    engines: {node: '>=6.0.0'}
-
   nodemailer@7.0.11:
     resolution: {integrity: sha512-gnXhNRE0FNhD7wPSCGhdNh46Hs6nm+uTyg+Kq0cZukNQiYdnCsoQjodNP9BQVG9XrcK/v6/MgpAPBUFyzh9pvw==}
     engines: {node: '>=6.0.0'}
 
   nodemailer@7.0.12:
     resolution: {integrity: sha512-H+rnK5bX2Pi/6ms3sN4/jRQvYSMltV6vqup/0SFOrxYYY/qoNvhXPlYq3e+Pm9RFJRwrMGbMIwi81M4dxpomhA==}
+    engines: {node: '>=6.0.0'}
+
+  nodemailer@9.0.4:
+    resolution: {integrity: sha512-LmJNRVRtfSCULxcZpy0Cpg4WWenlUZ9+zbmTO+S7v9wD6XreYLjXRFtDjtV/4F0HT5p1GyZfA0Ux/myxHb18CQ==}
     engines: {node: '>=6.0.0'}
 
   normalize-path@3.0.0:
@@ -8750,11 +8750,11 @@ snapshots:
 
   node-releases@2.0.27: {}
 
-  nodemailer@6.10.1: {}
-
   nodemailer@7.0.11: {}
 
   nodemailer@7.0.12: {}
+
+  nodemailer@9.0.4: {}
 
   normalize-path@3.0.0: {}
 
